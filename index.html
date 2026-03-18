@@ -1211,16 +1211,3 @@ function toast(msg,type='success'){const el=document.getElementById('toast');el.
 </script>
 </body>
 </html>
-</script>
-<script>
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function closeOverlay(e,id){if(e.target.id===id)closeModal(id);}
-window.openModal=openModal;window.closeModal=closeModal;window.closeOverlay=closeOverlay;
-function dr(label,val){if(!val||String(val).trim()==='')return '';return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${val}</span></div>`;}
-function ea(s){return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-let toastTimer;
-function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000);}
-</script>
-</body>
-</html>

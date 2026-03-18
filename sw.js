@@ -1,5 +1,5 @@
 // APP-CSE Service Worker — network-first
-const CACHE = 'app-cse-v12';
+const CACHE = 'app-cse-v13';
 const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', e => {
