@@ -539,7 +539,24 @@ const firebaseConfig = {
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     const col = () => collection(db,'procurement_items');
-    async function getAll()          { const s=await getDocs(col()); return s.docs.map(d=>({id:d.id,...d.data()})); }
+    async function getAll(){
+      try {
+        const s = await Promise.race([
+          getDocs(col()),
+          new Promise((_,reject) => setTimeout(()=>reject(new Error('Firestore timeout — check your security rules (allow read: if true)')), 10000))
+        ]);
+        return s.docs.map(d=>({id:d.id,...d.data()}));
+      } catch(err) {
+        const el = document.getElementById('dash-inner') || document.getElementById('items-table') || document.getElementById('dept-table');
+        if(el) el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#ef4444;font-size:13px">
+          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+          <div style="font-weight:700;margin-bottom:6px">Failed to load data</div>
+          <div style="color:#94a3b8;font-family:monospace;font-size:11px;background:#0d1020;padding:10px;border-radius:6px;margin-top:8px;word-break:break-all">${err.message}</div>
+          <div style="margin-top:12px;color:#94a3b8;font-size:12px">Check Firestore Rules: allow read, write: if true;</div>
+        </div>`;
+        throw err;
+      }
+    }
     async function addRec(data)      { return await addDoc(col(), data); }
     async function updateRec(id,data){ return await updateDoc(doc(db,'procurement_items',id), data); }
     async function deleteRec(id)     { return await deleteDoc(doc(db,'procurement_items',id)); }
@@ -595,7 +612,10 @@ const firebaseConfig = {
     async function loadDashboard(){
       const el=document.getElementById('dash-inner');
       el.innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div>';
-      S.items=await getAll(); updateBadges();
+      try {
+        S.items=await getAll();
+      } catch(e) { return; }
+      updateBadges();
 
       const total=S.items.length;
       const totalAmt=S.items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
@@ -658,7 +678,8 @@ const firebaseConfig = {
     // Items page
     async function loadItems(){
       document.getElementById('items-table').innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading…</div>';
-      S.items=await getAll(); updateBadges();
+      try { S.items=await getAll(); } catch(e){ return; }
+      updateBadges();
       filterItems();
     }
     function filteredItems(){
