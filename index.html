@@ -1459,9 +1459,12 @@ ${deptSections}
       win.document.write(html);
       win.document.close();
     }
-     loadDashboard();
+    
+    window.printAll = printAll;
+
+    loadDashboard();
   } catch(e) {
-    document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f7f5ef;font-family:sans-serif;text-align:center;padding:20px"><div><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;margin-bottom:8px;color:#0d1f3c">Firebase Connection Failed</div><div style="font-size:13px;color:#888">${e.message}</div></div></div>`;
+    document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f7f5ef;font-family:sans-serif;text-align:center;padding:20px"><div><div style="font-size:48px;margin-bottom:16px">&#9888;&#65039;</div><div style="font-size:18px;margin-bottom:8px;color:#0d1f3c">Firebase Connection Failed</div><div style="font-size:13px;color:#888">'+e.message+'</div></div></div>';
   }
 })();
 </script>
@@ -1476,11 +1479,7 @@ let toastTimer;
 function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000);}
 </script>
 </body>
-</html> loadDashboard();
-  } catch(e) {
-    document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f7f5ef;font-family:sans-serif;text-align:center;padding:20px"><div><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;margin-bottom:8px;color:#0d1f3c">Firebase Connection Failed</div><div style="font-size:13px;color:#888">${e.message}</div></div></div>`;
-  }
-})();
+</html>
 </script>
 <script>
 function openModal(id){document.getElementById(id).classList.add('open');}
