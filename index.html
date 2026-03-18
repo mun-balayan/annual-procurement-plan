@@ -1044,6 +1044,9 @@ const firebaseConfig = {
       win.document.close();
     }
     window.printDept = printDept;
+
+    loadDashboard();
+  } catch(e) {
     document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f7f5ef;font-family:sans-serif;text-align:center;padding:20px"><div><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;margin-bottom:8px;color:#0d1f3c">Firebase Connection Failed</div><div style="font-size:13px;color:#888">${e.message}</div></div></div>`;
   }
 })();
