@@ -407,7 +407,12 @@ tbody td:last-child { border-right: none; }
       <button onclick="switchPage('dashboard');toggleMobileMenu()" style="display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:14px;cursor:pointer">📊 Dashboard</button>
       <button onclick="switchPage('items');toggleMobileMenu()" style="display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:14px;cursor:pointer">📦 All Items</button>
       <div style="font-size:10px;color:rgba(255,255,255,.3);padding:12px 20px 4px;letter-spacing:1px;text-transform:uppercase">Departments</div>
-      ${['GSO','ICT','MPDC','PESO','MHO','HRMO'].map(d=>`<button onclick="switchDept('${d}');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">${d}<span id="mdrawer-${d}" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>`).join('')}
+      <button onclick="switchDept('GSO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">GSO<span id="mdrawer-GSO" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
+      <button onclick="switchDept('ICT');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">ICT<span id="mdrawer-ICT" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
+      <button onclick="switchDept('MPDC');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">MPDC<span id="mdrawer-MPDC" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
+      <button onclick="switchDept('PESO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">PESO<span id="mdrawer-PESO" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
+      <button onclick="switchDept('MHO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">MHO<span id="mdrawer-MHO" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
+      <button onclick="switchDept('HRMO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;color:rgba(255,255,255,.7);background:none;border:none;width:100%;font-size:13px;cursor:pointer">HRMO<span id="mdrawer-HRMO" style="font-size:10px;color:rgba(255,255,255,.4)">0</span></button>
     </div>
   </div>
 
@@ -518,7 +523,7 @@ const firebaseConfig = {
 
 (function initApp(){
   try {
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig, 'app-cse');
     const db  = getFirestore(app);
 
     let isOnline = navigator.onLine;
