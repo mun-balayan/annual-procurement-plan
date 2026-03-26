@@ -53,6 +53,7 @@ tbody td{padding:7px 12px;}
 .bb{background:rgba(88,166,255,.12);color:#58a6ff;border:1px solid rgba(88,166,255,.2);}
 .ba{background:rgba(210,153,34,.12);color:#e3b341;border:1px solid rgba(210,153,34,.2);}
 .bgr{background:#21262d;color:#8b949e;border:1px solid #30363d;}
+.bgr2{background:rgba(107,53,168,.12);color:#c792ea;border:1px solid rgba(107,53,168,.3);}
 .warn-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:8px;padding:14px;margin-bottom:16px;display:none;gap:10px;align-items:flex-start;}
 .warn-box.show{display:flex;}
 .warn-text{font-size:13px;color:#f85149;line-height:1.5;}
@@ -147,16 +148,38 @@ window._fb = { db, collection, getDocs, writeBatch, doc };
 </script>
 
 <script>
-const SHEET_MAP = {
-  'GSO':{'dept':'GSO','type':'CSE'},'GSO Other Supplies':{'dept':'GSO','type':'Other Supplies'},'GSO Machinery':{'dept':'GSO','type':'Machinery'},
-  'ICT':{'dept':'ICT','type':'CSE'},'ICT Other Supplies':{'dept':'ICT','type':'Other Supplies'},'ICT Machinery':{'dept':'ICT','type':'Machinery'},
-  'MPDC':{'dept':'MPDC','type':'CSE'},'MPDC Other Supplies':{'dept':'MPDC','type':'Other Supplies'},'MPDC Machinery':{'dept':'MPDC','type':'Machinery'},
-  'PESO':{'dept':'PESO','type':'CSE'},'PESO Other Supplies':{'dept':'PESO','type':'Other Supplies'},'PESO Machinery':{'dept':'PESO','type':'Machinery'},
-  'MHO':{'dept':'MHO','type':'CSE'},'MHO Other Supplies':{'dept':'MHO','type':'Other Supplies'},'MHO Machinery':{'dept':'MHO','type':'Machinery'},
-  'HRMO':{'dept':'HRMO','type':'CSE'},'HRMO Other Supplies':{'dept':'HRMO','type':'Other Supplies'},'HRMO Machinery':{'dept':'HRMO','type':'Machinery'}
-};
-const ALL_DEPTS = ['GSO','ICT','MPDC','PESO','MHO','HRMO'];
+// Sheet map is built dynamically from the uploaded workbook
+// Any sheet not in SKIP_SHEETS and not ending with ' Other Supplies' or ' Machinery'
+// is treated as a department base sheet (Office Supplies).
+const SKIP_SHEETS = ['ALL','Printing Sheet','Users','Sheet1','Sheet2','Sheet3'];
+let SHEET_MAP = {};
+let ALL_DEPTS = [];
 let rows=[], mode='replace';
+
+function buildSheetMap(sheetNames){
+  SHEET_MAP = {};
+  ALL_DEPTS = [];
+  // Find base dept sheets first
+  sheetNames.forEach(name=>{
+    if(SKIP_SHEETS.includes(name)) return;
+    if(name.endsWith(' Other Supplies') || name.endsWith(' Machinery')) return;
+    const dept = name.trim().toUpperCase();
+    SHEET_MAP[name] = {dept, type:'Office Supplies'};
+    if(!ALL_DEPTS.includes(dept)) ALL_DEPTS.push(dept);
+  });
+  // Then find Other Supplies / Machinery sheets
+  sheetNames.forEach(name=>{
+    if(name.endsWith(' Other Supplies')){
+      const dept = name.slice(0,-15).trim().toUpperCase();
+      SHEET_MAP[name] = {dept, type:'Other Supplies'};
+      if(!ALL_DEPTS.includes(dept)) ALL_DEPTS.push(dept);
+    } else if(name.endsWith(' Machinery')){
+      const dept = name.slice(0,-9).trim().toUpperCase();
+      SHEET_MAP[name] = {dept, type:'Machinery'};
+      if(!ALL_DEPTS.includes(dept)) ALL_DEPTS.push(dept);
+    }
+  });
+}
 
 function dv(e){e.preventDefault();document.getElementById('dz').classList.add('over');}
 function dl(e){document.getElementById('dz').classList.remove('over');}
@@ -168,6 +191,7 @@ function handleFile(file){
   const reader=new FileReader();
   reader.onload=e=>{
     const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    buildSheetMap(wb.SheetNames);
     rows=[];
     Object.entries(SHEET_MAP).forEach(([sheet,meta])=>{
       const ws=wb.Sheets[sheet]; if(!ws) return;
@@ -211,14 +235,14 @@ function buildPreview(){
     <div class="sum-box"><div class="sum-num" style="color:#f85149">${notA}</div><div class="sum-label">Not Available</div></div>`;
   document.getElementById('depts').innerHTML=ALL_DEPTS.map(d=>
     `<div class="dept-row"><span class="dept-name">${d}</span><span class="dept-count ${byDept[d]>0?'has-data':'no-data'}">${byDept[d]>0?byDept[d]+' records':'Empty'}</span></div>`
-  ).join('')+`<div style="font-size:11px;color:#484f58;margin-top:8px">Departments showing Empty have no data in the Excel file yet.</div>`;
+  ).join('')+`<div style="font-size:11px;color:#484f58;margin-top:8px">Detected ${ALL_DEPTS.length} department(s) from ${Object.keys(SHEET_MAP).length} sheet(s). Departments showing Empty have no data in the Excel file yet.</div>`;
   const th=`<thead><tr><th>#</th><th>Item</th><th>Dept</th><th>Type</th><th>Month</th><th>Unit</th><th>Unit Price</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>`;
   const shown=rows.slice(0,60);
   const tb=shown.map((r,i)=>`<tr>
     <td style="color:#484f58">${i+1}</td>
     <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e6edf3;font-weight:500">${r.item}</td>
     <td><span class="badge bgr">${r.department}</span></td>
-    <td><span class="badge ${r.type==='CSE'?'bb':r.type==='Machinery'?'ba':'bgr'}">${r.type}</span></td>
+    <td><span class="badge ${r.type==='Office Supplies'?'bb':r.type==='Machinery'?'ba':r.type==='Other Supplies'?'bgr2':'bgr'}">${r.type}</span></td>
     <td style="color:#8b949e">${r.month}</td>
     <td style="color:#8b949e">${r.unit_of_measure}</td>
     <td style="font-family:monospace;color:#e3b341">₱${parseFloat(r.unit_price).toLocaleString('en-PH',{minimumFractionDigits:2})}</td>

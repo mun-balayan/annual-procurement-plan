@@ -25,8 +25,6 @@
 <style>
 /* ═══════════════════════════════════════
    DESIGN SYSTEM — "CIVIC BLUE"
-   Light, clean, government-grade.
-   High readability. SVG icons only.
 ═══════════════════════════════════════ */
 :root {
   --bg:    #F4F6FA;
@@ -55,6 +53,10 @@
   --red2:       #971E14;
   --red-light:  rgba(192,39,26,.08);
   --red-border: rgba(192,39,26,.2);
+
+  --purple:        #6B35A8;
+  --purple-light:  rgba(107,53,168,.09);
+  --purple-border: rgba(107,53,168,.22);
 
   --ink:   #0F1929;
   --ink2:  #374151;
@@ -89,7 +91,6 @@ button{cursor:pointer;}
 ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:5px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--ink4);}
 
-/* subtle dot bg */
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:radial-gradient(circle,rgba(27,58,107,.04) 1px,transparent 1px);
@@ -109,13 +110,11 @@ body::before{
   flex-shrink:0;position:relative;z-index:100;
   box-shadow:0 2px 16px rgba(27,58,107,.35);
 }
-/* gold shimmer line at bottom */
 #topbar::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent 0%,rgba(212,152,14,.8) 30%,rgba(212,152,14,1) 50%,rgba(212,152,14,.8) 70%,transparent 100%);
 }
 
-/* Brand */
 .tb-brand{
   display:flex;align-items:center;gap:11px;
   padding:0 20px;border-right:1px solid rgba(255,255,255,.1);
@@ -182,6 +181,14 @@ body::before{
 .btn-add-top svg{width:14px;height:14px;}
 .btn-add-top:hover{opacity:.9;transform:translateY(-1px);}
 .btn-add-top:active{transform:translateY(0);}
+.btn-dept-top{
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);padding:7px 12px;font-size:12px;
+  font-weight:600;cursor:pointer;display:flex;align-items:center;
+  gap:6px;transition:all .15s;white-space:nowrap;
+}
+.btn-dept-top svg{width:14px;height:14px;}
+.btn-dept-top:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff;}
 #mobile-menu-btn{
   display:none;background:none;border:none;
   color:rgba(255,255,255,.7);padding:4px 14px;
@@ -247,7 +254,6 @@ body::before{
   box-shadow:var(--sh1);transition:box-shadow .2s,transform .2s;
   animation:fadeUp .3s ease both;position:relative;overflow:hidden;
 }
-/* colored top bar */
 .stat-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   border-radius:var(--r2) var(--r2) 0 0;
@@ -256,8 +262,8 @@ body::before{
 .stat-card.c-gold::before {background:var(--gold-grad);}
 .stat-card.c-green::before{background:linear-gradient(90deg,var(--green),#1AAB65);}
 .stat-card.c-red::before  {background:linear-gradient(90deg,var(--red),#E84030);}
+.stat-card.c-purple::before{background:linear-gradient(90deg,var(--purple),#9B59B6);}
 .stat-card:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
-/* icon watermark */
 .stat-wm{
   position:absolute;right:16px;top:16px;
   width:32px;height:32px;opacity:.1;color:var(--blue);
@@ -267,11 +273,38 @@ body::before{
 .stat-card:hover .stat-wm{opacity:.2;}
 .stat-label{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
 .stat-num{font-size:34px;font-weight:700;color:var(--blue);line-height:1;letter-spacing:-.5px;font-family:var(--fu);}
-.stat-num.c-gold {color:var(--gold);}
-.stat-num.c-green{color:var(--green);}
-.stat-num.c-red  {color:var(--red);}
+.stat-num.c-gold  {color:var(--gold);}
+.stat-num.c-green {color:var(--green);}
+.stat-num.c-red   {color:var(--red);}
+.stat-num.c-purple{color:var(--purple);}
 .stat-num.sm{font-size:20px;}
+.stat-sub{font-size:11px;color:var(--ink3);margin-top:6px;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ TYPE TOTALS ROW (dept page) ═══ */
+.type-totals-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:18px;
+}
+.type-total-card{
+  background:var(--white);border:1px solid var(--bdr2);
+  border-radius:var(--r2);padding:14px 16px;
+  box-shadow:var(--sh1);position:relative;overflow:hidden;
+  transition:box-shadow .2s;
+}
+.type-total-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:var(--r2) var(--r2) 0 0;
+}
+.type-total-card.tc-blue::before  {background:linear-gradient(90deg,var(--blue),var(--blue3));}
+.type-total-card.tc-gold::before  {background:var(--gold-grad);}
+.type-total-card.tc-purple::before{background:linear-gradient(90deg,var(--purple),#9B59B6);}
+.type-total-card:hover{box-shadow:var(--sh2);}
+.type-total-label{font-size:9.5px;font-weight:700;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;}
+.type-total-amount{font-size:17px;font-weight:700;font-family:var(--fm);color:var(--blue);line-height:1.2;}
+.type-total-amount.a-gold  {color:var(--gold);}
+.type-total-amount.a-purple{color:var(--purple);}
+.type-total-count{font-size:10px;color:var(--ink3);margin-top:3px;}
 
 /* ═══════════════════════════════════════
    DASHBOARD CARDS
@@ -297,12 +330,13 @@ body::before{
 /* Bar chart */
 .bar-row{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
 .bar-row:last-child{margin-bottom:0;}
-.bar-label{font-size:11.5px;color:var(--ink2);min-width:72px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
+.bar-label{font-size:11.5px;color:var(--ink2);min-width:100px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
 .bar-track{flex:1;background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--blue3));transition:width .75s cubic-bezier(.4,0,.2,1);}
-.bar-fill.gold {background:var(--gold-grad);}
-.bar-fill.green{background:linear-gradient(90deg,var(--green),#1AAB65);}
-.bar-val{font-family:var(--fm);font-size:11px;color:var(--ink3);min-width:26px;text-align:right;font-weight:500;}
+.bar-fill.gold  {background:var(--gold-grad);}
+.bar-fill.green {background:linear-gradient(90deg,var(--green),#1AAB65);}
+.bar-fill.purple{background:linear-gradient(90deg,var(--purple),#9B59B6);}
+.bar-val{font-family:var(--fm);font-size:10.5px;color:var(--ink3);min-width:80px;text-align:right;font-weight:500;}
 
 /* ═══════════════════════════════════════
    TOOLBAR + SEARCH
@@ -359,11 +393,12 @@ tbody td:last-child{border-right:none;}
    BADGES
 ═══════════════════════════════════════ */
 .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;letter-spacing:.2px;}
-.badge-green{background:var(--green-light);color:var(--green2);border:1px solid var(--green-border);}
-.badge-red  {background:var(--red-light);  color:var(--red2);  border:1px solid var(--red-border);}
-.badge-blue {background:var(--blue-light); color:var(--blue2); border:1px solid var(--blue-border);}
-.badge-gold {background:var(--gold-light); color:var(--gold2); border:1px solid var(--gold-border);}
-.badge-gray {background:var(--bg2);        color:var(--ink3);  border:1px solid var(--bdr);}
+.badge-green {background:var(--green-light); color:var(--green2); border:1px solid var(--green-border);}
+.badge-red   {background:var(--red-light);   color:var(--red2);   border:1px solid var(--red-border);}
+.badge-blue  {background:var(--blue-light);  color:var(--blue2);  border:1px solid var(--blue-border);}
+.badge-gold  {background:var(--gold-light);  color:var(--gold2);  border:1px solid var(--gold-border);}
+.badge-purple{background:var(--purple-light);color:var(--purple); border:1px solid var(--purple-border);}
+.badge-gray  {background:var(--bg2);         color:var(--ink3);   border:1px solid var(--bdr);}
 
 /* ═══════════════════════════════════════
    BUTTONS
@@ -401,6 +436,7 @@ tbody td:last-child{border-right:none;}
   animation:modalIn .2s cubic-bezier(.34,1.2,.64,1);
   box-shadow:var(--sh4);
 }
+.modal.modal-sm{max-width:440px;}
 @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-header{
   padding:18px 22px 14px;border-bottom:1px solid var(--bdr2);
@@ -451,6 +487,27 @@ tbody td:last-child{border-right:none;}
   background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
 }
 .form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--bdr2);margin-top:18px;}
+
+/* ═══ DEPT LIST (manage depts modal) ═══ */
+.dept-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.dept-list-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--bg);border:1px solid var(--bdr2);
+  border-radius:var(--r);
+}
+.dept-list-name{font-weight:600;font-size:13px;color:var(--blue);}
+.dept-list-meta{font-size:11px;color:var(--ink3);}
+.dept-list-item.builtin .dept-list-name::after{
+  content:'built-in';font-size:9px;font-weight:600;
+  background:var(--blue-light);color:var(--blue3);border:1px solid var(--blue-border);
+  border-radius:10px;padding:1px 7px;margin-left:8px;letter-spacing:.3px;
+}
+.dept-delete-btn{
+  background:var(--red-light);border:1px solid var(--red-border);color:var(--red2);
+  border-radius:var(--r);padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+}
+.dept-delete-btn:hover{background:rgba(192,39,26,.16);}
 
 /* ═══ UTILITY ═══ */
 .loading{text-align:center;padding:60px 20px;color:var(--ink3);font-size:13px;}
@@ -521,6 +578,7 @@ tbody td:last-child{border-right:none;}
 @media(max-width:1100px){
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .dash-grid{grid-template-columns:1fr;}
+  .type-totals-row{grid-template-columns:repeat(3,1fr);}
 }
 @media(max-width:768px){
   :root{--bar-h:54px;}
@@ -533,6 +591,7 @@ tbody td:last-child{border-right:none;}
   #tab-nav{display:none;}
   #mobile-menu-btn{display:flex;}
   .tb-clock{display:none;}
+  .btn-dept-top{display:none;}
   .form-grid{grid-template-columns:1fr;}
   .form-actions{flex-direction:column-reverse;}
   .form-actions .btn{width:100%;justify-content:center;}
@@ -549,6 +608,8 @@ tbody td:last-child{border-right:none;}
   .tb-sub{display:none;}
   .tb-brand{padding:0 14px;}
   .tb-right{padding:0 12px;}
+  .type-totals-row{grid-template-columns:1fr 1fr;}
+  .type-totals-row .type-total-card:last-child{grid-column:1/-1;}
 }
 @media(max-width:390px){
   .stats-row{gap:8px;}
@@ -557,6 +618,7 @@ tbody td:last-child{border-right:none;}
   .badge{font-size:10px;padding:2px 8px;}
   .modal-title{font-size:17px;}
   .modal-body{padding:14px 16px;}
+  .type-totals-row{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -593,35 +655,16 @@ tbody td:last-child{border-right:none;}
       All Items<span class="tab-badge" id="badge-all">—</span>
     </button>
     <div class="tb-divider"></div>
-    <button class="tab-btn" id="tab-GSO"  onclick="switchDept('GSO')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-      GSO<span class="tab-badge" id="badge-GSO">0</span>
-    </button>
-    <button class="tab-btn" id="tab-ICT"  onclick="switchDept('ICT')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="11" rx="1.5"/><path d="M7 18h6M10 15v3"/></svg>
-      ICT<span class="tab-badge" id="badge-ICT">0</span>
-    </button>
-    <button class="tab-btn" id="tab-MPDC" onclick="switchDept('MPDC')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l8 7H2l8-7z"/><rect x="7" y="9" width="6" height="9"/></svg>
-      MPDC<span class="tab-badge" id="badge-MPDC">0</span>
-    </button>
-    <button class="tab-btn" id="tab-PESO" onclick="switchDept('PESO')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6" r="3"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
-      PESO<span class="tab-badge" id="badge-PESO">0</span>
-    </button>
-    <button class="tab-btn" id="tab-MHO"  onclick="switchDept('MHO')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14M3 10h14"/><rect x="2" y="2" width="16" height="16" rx="2"/></svg>
-      MHO<span class="tab-badge" id="badge-MHO">0</span>
-    </button>
-    <button class="tab-btn" id="tab-HRMO" onclick="switchDept('HRMO')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.5"/><circle cx="13" cy="6" r="2.5"/><path d="M1 18c0-2.8 2.7-5 6-5M19 18c0-2.8-2.7-5-6-5M7 13c1.8-1 4.2-1 6 0"/></svg>
-      HRMO<span class="tab-badge" id="badge-HRMO">0</span>
-    </button>
-    <div class="tb-divider"></div>
+    <!-- Dept tabs rendered dynamically -->
+    <div id="dept-tabs" style="display:contents"></div>
   </div>
 
   <div class="tb-right">
     <div class="tb-clock" id="topbar-clock"></div>
+    <button class="btn-dept-top" onclick="openDeptModal()">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v3M8 13h4"/></svg>
+      Departments
+    </button>
     <button class="btn-add-top" id="topbar-add-btn" onclick="openAddModal()">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
       Add Item
@@ -647,13 +690,12 @@ tbody td:last-child{border-right:none;}
       <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
       All Items
     </button>
-    <div style="font-size:9px;color:rgba(255,255,255,.35);padding:12px 18px 5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600">Departments</div>
-    <button onclick="switchDept('GSO');toggleMobileMenu()"  style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">GSO<span id="mdrawer-GSO"  style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
-    <button onclick="switchDept('ICT');toggleMobileMenu()"  style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">ICT<span id="mdrawer-ICT"  style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
-    <button onclick="switchDept('MPDC');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">MPDC<span id="mdrawer-MPDC" style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
-    <button onclick="switchDept('PESO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">PESO<span id="mdrawer-PESO" style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
-    <button onclick="switchDept('MHO');toggleMobileMenu()"  style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">MHO<span id="mdrawer-MHO"  style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
-    <button onclick="switchDept('HRMO');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">HRMO<span id="mdrawer-HRMO" style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span></button>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 5px">
+      <div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:1.2px;text-transform:uppercase;font-weight:600">Departments</div>
+      <button onclick="openDeptModal();toggleMobileMenu()" style="font-size:10px;color:#FFD968;background:rgba(212,152,14,.18);border:1px solid rgba(212,152,14,.3);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:var(--fu);font-weight:600">+ Manage</button>
+    </div>
+    <!-- Dept buttons rendered dynamically -->
+    <div id="drawer-depts"></div>
   </div>
 </div>
 
@@ -694,12 +736,10 @@ tbody td:last-child{border-right:none;}
       </div>
       <select class="filter-sel" id="items-dept" onchange="filterItems()">
         <option value="">All Departments</option>
-        <option>GSO</option><option>ICT</option><option>MPDC</option>
-        <option>PESO</option><option>MHO</option><option>HRMO</option>
       </select>
       <select class="filter-sel" id="items-type" onchange="filterItems()">
         <option value="">All Types</option>
-        <option>CSE</option><option>Other Supplies</option><option>Machinery</option>
+        <option>Office Supplies</option><option>Other Supplies</option><option>Machinery</option>
       </select>
       <select class="filter-sel" id="items-month" onchange="filterItems()">
         <option value="">All Months</option>
@@ -734,6 +774,8 @@ tbody td:last-child{border-right:none;}
         </button>
       </div>
     </div>
+    <!-- Type totals summary cards -->
+    <div id="dept-type-totals" class="type-totals-row"></div>
     <div class="toolbar">
       <div class="search-wrap">
         <svg class="search-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M17 17l-3.5-3.5"/></svg>
@@ -741,7 +783,7 @@ tbody td:last-child{border-right:none;}
       </div>
       <select class="filter-sel" id="dept-type-filter" onchange="filterDept()">
         <option value="">All Types</option>
-        <option>CSE</option><option>Other Supplies</option><option>Machinery</option>
+        <option>Office Supplies</option><option>Other Supplies</option><option>Machinery</option>
       </select>
       <select class="filter-sel" id="dept-month-filter" onchange="filterDept()">
         <option value="">All Months</option>
@@ -791,6 +833,7 @@ tbody td:last-child{border-right:none;}
     <div class="modal-body" id="item-modal-body"></div>
   </div>
 </div>
+
 <div class="modal-overlay" id="modal-form" onclick="closeOverlay(event,'modal-form')">
   <div class="modal">
     <div class="modal-header">
@@ -802,6 +845,37 @@ tbody td:last-child{border-right:none;}
     <div class="modal-body" id="form-body"></div>
   </div>
 </div>
+
+<!-- ═══ DEPARTMENT MANAGEMENT MODAL ═══ -->
+<div class="modal-overlay" id="modal-dept" onclick="closeOverlay(event,'modal-dept')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Manage Departments</div>
+      <button class="modal-close" onclick="closeModal('modal-dept')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="dept-list-body"></div>
+      <div style="border-top:1px solid var(--bdr2);padding-top:16px;margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Add New Department</div>
+        <div style="display:flex;gap:9px;align-items:flex-end">
+          <div class="form-group" style="flex:1">
+            <label class="form-label">Department Name</label>
+            <input class="form-input" id="new-dept-name" placeholder="e.g. ENGINEERING" maxlength="30"
+              oninput="this.value=this.value.toUpperCase()"
+              onkeydown="if(event.key==='Enter')saveDept()">
+          </div>
+          <button class="btn btn-primary" onclick="saveDept()" style="flex-shrink:0;margin-bottom:0">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab-btn" onclick="openAddModal()">
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
@@ -824,7 +898,7 @@ const firebaseConfig = {
     const app = initializeApp(firebaseConfig, 'app-cse');
     const db  = getFirestore(app);
 
-    // ── Online/Offline — default ONLINE, only change on real events ──
+    // ── Online/Offline ──
     let isOnline = true;
     function setOnlineState(online){
       isOnline = online;
@@ -834,21 +908,158 @@ const firebaseConfig = {
     window.addEventListener('online',  ()=>{ setOnlineState(true);  toast('Back online!','success'); });
     window.addEventListener('offline', ()=>{ setOnlineState(false); });
 
+    // ── Constants ──
+    const BUILTIN_DEPTS = ['GSO','ICT','MPDC','PESO','MHO','HRMO'];
+    let   DEPTS = [...BUILTIN_DEPTS]; // Will be extended by Firestore depts
+    let   CUSTOM_DEPT_DOCS = []; // [{id, name}] for Firestore-stored depts
+
+    const TYPES  = ['Office Supplies','Other Supplies','Machinery'];
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    // Normalize type: legacy 'CSE' → 'Office Supplies'
+    function normalizeType(t){
+      if(!t) return 'Office Supplies';
+      if(t.toLowerCase()==='cse') return 'Office Supplies';
+      return t;
+    }
+
+    // ── Icon map for department tabs ──
+    const DEPT_ICON_PATHS = {
+      'GSO' : '<rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/>',
+      'ICT' : '<rect x="2" y="4" width="16" height="11" rx="1.5"/><path d="M7 18h6M10 15v3"/>',
+      'MPDC': '<path d="M10 2l8 7H2l8-7z"/><rect x="7" y="9" width="6" height="9"/>',
+      'PESO': '<circle cx="10" cy="6" r="3"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6"/>',
+      'MHO' : '<path d="M10 3v14M3 10h14"/><rect x="2" y="2" width="16" height="16" rx="2"/>',
+      'HRMO': '<circle cx="7" cy="6" r="2.5"/><circle cx="13" cy="6" r="2.5"/><path d="M1 18c0-2.8 2.7-5 6-5M19 18c0-2.8-2.7-5-6-5M7 13c1.8-1 4.2-1 6 0"/>',
+      '_default': '<rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 8h6M7 11h4"/>',
+    };
+    function deptIcon(d){ return DEPT_ICON_PATHS[d]||DEPT_ICON_PATHS['_default']; }
+
     const S = { page:'dashboard', dept:null, items:[], editId:null,
       itemSearch:'', itemDept:'', itemType:'', itemMonth:'', itemAvail:'',
       deptSearch:'', deptType:'', deptMonth:'', deptAvail:'' };
-    const DEPTS  = ['GSO','ICT','MPDC','PESO','MHO','HRMO'];
-    const TYPES  = ['CSE','Other Supplies','Machinery'];
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-    const col = () => collection(db,'procurement_items');
+    const col     = () => collection(db,'procurement_items');
+    const deptCol = () => collection(db,'app_departments');
+
+    // ── Load Departments from Firestore ──
+    async function loadDepts(){
+      try {
+        const snap = await getDocs(deptCol());
+        CUSTOM_DEPT_DOCS = snap.docs.map(d=>({id:d.id, name:d.data().name})).filter(d=>d.name);
+        const customNames = CUSTOM_DEPT_DOCS.map(d=>d.name);
+        DEPTS = [...BUILTIN_DEPTS];
+        customNames.forEach(n=>{ if(!DEPTS.includes(n)) DEPTS.push(n); });
+      } catch(e){ /* use defaults */ }
+      renderDeptNav();
+      updateFilterDepts();
+    }
+
+    function renderDeptNav(){
+      // Tab nav dept buttons
+      const tabEl = document.getElementById('dept-tabs');
+      tabEl.innerHTML = DEPTS.map(d=>`
+        <button class="tab-btn" id="tab-${d}" onclick="switchDept('${d}')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${deptIcon(d)}</svg>
+          ${d}<span class="tab-badge" id="badge-${d}">0</span>
+        </button>
+        <div class="tb-divider"></div>
+      `).join('');
+
+      // Mobile drawer dept buttons
+      const drawerEl = document.getElementById('drawer-depts');
+      drawerEl.innerHTML = DEPTS.map(d=>`
+        <button onclick="switchDept('${d}');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">
+          ${d}<span id="mdrawer-${d}" style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span>
+        </button>
+      `).join('');
+    }
+
+    function updateFilterDepts(){
+      const deptOpts = DEPTS.map(d=>`<option>${d}</option>`).join('');
+      const el = document.getElementById('items-dept');
+      if(el){
+        const cur = el.value;
+        el.innerHTML = `<option value="">All Departments</option>${deptOpts}`;
+        el.value = cur;
+      }
+    }
+
+    // ── Department CRUD ──
+    function openDeptModal(){
+      renderDeptList();
+      document.getElementById('new-dept-name').value='';
+      openModal('modal-dept');
+    }
+    window.openDeptModal = openDeptModal;
+
+    function renderDeptList(){
+      const body = document.getElementById('dept-list-body');
+      body.innerHTML = `<div class="dept-list">
+        ${DEPTS.map(d=>{
+          const isBuiltin = BUILTIN_DEPTS.includes(d);
+          const customDoc = CUSTOM_DEPT_DOCS.find(x=>x.name===d);
+          const cnt = S.items.filter(i=>i.department===d).length;
+          return `<div class="dept-list-item ${isBuiltin?'builtin':''}">
+            <div>
+              <div class="dept-list-name">${d}</div>
+              <div class="dept-list-meta">${cnt} item${cnt!==1?'s':''} registered</div>
+            </div>
+            ${!isBuiltin && customDoc ? `<button class="dept-delete-btn" onclick="confirmDeleteDept('${customDoc.id}','${d}')">Remove</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    async function saveDept(){
+      const nameInput = document.getElementById('new-dept-name');
+      const name = (nameInput.value||'').trim().toUpperCase();
+      if(!name){ toast('Enter a department name','error'); return; }
+      if(name.length > 20){ toast('Name too long (max 20 chars)','error'); return; }
+      if(DEPTS.includes(name)){ toast(`${name} already exists`,'error'); return; }
+      if(!isOnline){ toast('Offline. Cannot save.','error'); return; }
+      try {
+        const ref = await addDoc(deptCol(), { name, createdAt: new Date().toISOString() });
+        CUSTOM_DEPT_DOCS.push({ id: ref.id, name });
+        DEPTS.push(name);
+        renderDeptNav();
+        updateFilterDepts();
+        renderDeptList();
+        nameInput.value = '';
+        toast(`Department ${name} added!`, 'success');
+        updateBadges();
+      } catch(e){ toast('Error: '+e.message,'error'); }
+    }
+    window.saveDept = saveDept;
+
+    async function confirmDeleteDept(docId, name){
+      const cnt = S.items.filter(i=>i.department===name).length;
+      const msg = cnt > 0
+        ? `"${name}" has ${cnt} item(s). Removing the department will not delete its items — they will remain in the database but the department tab will be hidden. Continue?`
+        : `Remove department "${name}"?`;
+      if(!confirm(msg)) return;
+      if(!isOnline){ toast('Offline.','error'); return; }
+      try {
+        await deleteDoc(doc(db,'app_departments',docId));
+        CUSTOM_DEPT_DOCS = CUSTOM_DEPT_DOCS.filter(d=>d.id!==docId);
+        DEPTS = [...BUILTIN_DEPTS, ...CUSTOM_DEPT_DOCS.map(d=>d.name)];
+        renderDeptNav();
+        updateFilterDepts();
+        renderDeptList();
+        toast(`Department ${name} removed`,'success');
+        if(S.dept===name) switchPage('dashboard');
+      } catch(e){ toast('Error: '+e.message,'error'); }
+    }
+    window.confirmDeleteDept = confirmDeleteDept;
+
+    // ── Firestore item ops ──
     async function getAll(){
       try {
         const s = await Promise.race([
           getDocs(col()),
           new Promise((_,rej)=>setTimeout(()=>rej(new Error('Firestore timeout — check security rules (allow read: if true)')),10000))
         ]);
-        return s.docs.map(d=>({id:d.id,...d.data()}));
+        return s.docs.map(d=>({id:d.id,...d.data(), type: normalizeType(d.data().type)}));
       } catch(err) {
         const el=document.getElementById('dash-inner')||document.getElementById('items-table')||document.getElementById('dept-table');
         if(el) el.innerHTML=`<div style="text-align:center;padding:40px 20px">
@@ -870,9 +1081,10 @@ const firebaseConfig = {
     }
     setInterval(updateTime,1000); updateTime();
 
-    // Navigation
+    // ── Navigation ──
     function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); }
     window.switchPage=switchPage;
+
     function switchDept(dept){
       S.page='dept'; S.dept=dept; activatePage('dept');
       document.getElementById('dept-heading').innerHTML=`<em>${dept}</em> Department`;
@@ -884,6 +1096,7 @@ const firebaseConfig = {
       filterDeptPage();
     }
     window.switchDept=switchDept;
+
     function activatePage(pg){
       document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
       document.getElementById(`page-${pg}`).classList.add('active');
@@ -896,7 +1109,7 @@ const firebaseConfig = {
     function toggleMobileMenu(){ const d=document.getElementById('mobile-drawer'); d.style.display=d.style.display==='none'?'block':'none'; }
     window.toggleMobileMenu=toggleMobileMenu;
 
-    // Dashboard
+    // ── Dashboard ──
     async function loadDashboard(){
       const el=document.getElementById('dash-inner');
       el.innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div>';
@@ -907,19 +1120,44 @@ const firebaseConfig = {
       const totalAmt=S.items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
       const avail=S.items.filter(i=>!(i.availability||'').toLowerCase().includes('not')).length;
       const notAvail=S.items.filter(i=>(i.availability||'').toLowerCase().includes('not')).length;
-      const byDept={},byType={},byMonth={};
+
+      // By department (count + amount)
+      const byDeptAmt={};
       S.items.forEach(i=>{
-        const d=i.department||'N/A'; byDept[d]=(byDept[d]||0)+1;
-        const t=i.type||'N/A'; byType[t]=(byType[t]||0)+1;
-        const m=i.month||'N/A'; byMonth[m]=(byMonth[m]||0)+1;
+        const d=i.department||'N/A';
+        if(!byDeptAmt[d]) byDeptAmt[d]={count:0,amt:0};
+        byDeptAmt[d].count++;
+        byDeptAmt[d].amt+=parseFloat(i.total_amount||0);
       });
-      const dArr=Object.entries(byDept).sort((a,b)=>b[1]-a[1]);
-      const tArr=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+      const dArr=Object.entries(byDeptAmt).sort((a,b)=>b[1].amt-a[1].amt);
+      const maxDAmt=Math.max(...dArr.map(x=>x[1].amt),1);
+
+      // By type — ₱ total amounts
+      const byTypeAmt={'Office Supplies':0,'Other Supplies':0,'Machinery':0};
+      S.items.forEach(i=>{
+        const t=normalizeType(i.type);
+        if(byTypeAmt[t]!==undefined) byTypeAmt[t]+=parseFloat(i.total_amount||0);
+      });
+      const tArr=[
+        ['Office Supplies', byTypeAmt['Office Supplies']],
+        ['Other Supplies',  byTypeAmt['Other Supplies']],
+        ['Machinery',       byTypeAmt['Machinery']],
+      ];
+      const maxTAmt=Math.max(...tArr.map(x=>x[1]),1);
+
+      // Monthly distribution
+      const byMonth={};
+      S.items.forEach(i=>{ const m=i.month||'N/A'; byMonth[m]=(byMonth[m]||0)+1; });
       const mArr=MONTHS.filter(m=>byMonth[m]).map(m=>[m,byMonth[m]]);
-      const maxD=Math.max(...dArr.map(x=>x[1]),1);
-      const maxT=Math.max(...tArr.map(x=>x[1]),1);
       const maxM=Math.max(...mArr.map(x=>x[1]),1);
-      const barRow=(label,val,max,cls='')=>`<div class="bar-row"><div class="bar-label" title="${label}">${label}</div><div class="bar-track"><div class="bar-fill ${cls}" style="width:${Math.round(val/max*100)}%"></div></div><div class="bar-val">${val}</div></div>`;
+
+      const barRow=(label,val,max,cls='',valFmt='')=>`<div class="bar-row">
+        <div class="bar-label" title="${label}">${label}</div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${Math.round(val/max*100)}%"></div></div>
+        <div class="bar-val">${valFmt||val}</div>
+      </div>`;
+
+      const fmtAmt=n=>n>0?'₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}):'₱0.00';
 
       el.innerHTML=`
         <div class="page-header"><div><div class="page-title">Procurement <em>Overview</em></div><div class="page-sub">Annual Procurement Plan for Common-Use Supplies and Equipment</div></div></div>
@@ -944,14 +1182,14 @@ const firebaseConfig = {
         <div class="dash-grid">
           <div class="d-card">
             <div class="d-card-head">
-              <div class="d-card-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>By Department</div>
+              <div class="d-card-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>By Department — Total Amount</div>
               <button class="btn btn-outline btn-sm" onclick="switchPage('items')">View All →</button>
             </div>
-            <div class="d-card-body">${dArr.map(([d,c])=>barRow(d,c,maxD)).join('')||'<div style="color:var(--ink3);font-size:13px">No data yet</div>'}</div>
+            <div class="d-card-body">${dArr.map(([d,v])=>barRow(d,v.amt,maxDAmt,'',fmtAmt(v.amt))).join('')||'<div style="color:var(--ink3);font-size:13px">No data yet</div>'}</div>
           </div>
           <div class="d-card">
-            <div class="d-card-head"><div class="d-card-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M3 10h10M3 14h7"/></svg>By Type</div></div>
-            <div class="d-card-body">${tArr.map(([t,c])=>barRow(t,c,maxT,'gold')).join('')||'<div style="color:var(--ink3);font-size:13px">No data yet</div>'}</div>
+            <div class="d-card-head"><div class="d-card-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M3 10h10M3 14h7"/></svg>By Supply Category — Total Amount</div></div>
+            <div class="d-card-body">${tArr.map(([t,a],i)=>barRow(t,a,maxTAmt,i===0?'':(i===1?'gold':'purple'),fmtAmt(a))).join('')||'<div style="color:var(--ink3);font-size:13px">No data yet</div>'}</div>
           </div>
           <div class="d-card dash-full">
             <div class="d-card-head"><div class="d-card-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="16" height="16" rx="1.5"/><path d="M6 2v16M14 2v16M2 7h16M2 13h16"/></svg>Monthly Distribution</div></div>
@@ -969,7 +1207,7 @@ const firebaseConfig = {
       });
     }
 
-    // Items page
+    // ── Items page ──
     async function loadItems(){
       document.getElementById('items-table').innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading…</div>';
       try { S.items=await getAll(); } catch(e){ return; }
@@ -980,7 +1218,7 @@ const firebaseConfig = {
       const q=S.itemSearch.toLowerCase();
       if(q) list=list.filter(i=>[i.item,i.department,i.type,i.month,i.unit_of_measure].join(' ').toLowerCase().includes(q));
       if(S.itemDept)  list=list.filter(i=>i.department===S.itemDept);
-      if(S.itemType)  list=list.filter(i=>i.type===S.itemType);
+      if(S.itemType)  list=list.filter(i=>normalizeType(i.type)===S.itemType);
       if(S.itemMonth) list=list.filter(i=>i.month===S.itemMonth);
       if(S.itemAvail==='not')       list=list.filter(i=>(i.availability||'').toLowerCase().includes('not'));
       else if(S.itemAvail==='available') list=list.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
@@ -998,7 +1236,7 @@ const firebaseConfig = {
     }
     window.filterItems=filterItems;
 
-    // Dept page
+    // ── Dept page ──
     function filterDeptPage(){
       S.deptSearch=(document.getElementById('dept-search').value||'').toLowerCase();
       S.deptType=document.getElementById('dept-type-filter').value;
@@ -1006,17 +1244,52 @@ const firebaseConfig = {
       S.deptAvail=document.getElementById('dept-avail-filter').value;
       let list=S.items.filter(i=>i.department===S.dept);
       if(S.deptSearch) list=list.filter(i=>[i.item,i.type,i.month].join(' ').toLowerCase().includes(S.deptSearch));
-      if(S.deptType)   list=list.filter(i=>i.type===S.deptType);
+      if(S.deptType)   list=list.filter(i=>normalizeType(i.type)===S.deptType);
       if(S.deptMonth)  list=list.filter(i=>i.month===S.deptMonth);
       if(S.deptAvail==='not')            list=list.filter(i=>(i.availability||'').toLowerCase().includes('not'));
       else if(S.deptAvail==='available') list=list.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
+
+      // ── Render type totals cards ──
+      const typeTotals = {'Office Supplies':0,'Other Supplies':0,'Machinery':0};
+      const typeCounts = {'Office Supplies':0,'Other Supplies':0,'Machinery':0};
+      list.forEach(i=>{
+        const t = normalizeType(i.type);
+        if(typeTotals[t]!==undefined){
+          typeTotals[t] += parseFloat(i.total_amount||0);
+          typeCounts[t]++;
+        }
+      });
+      const fmtAmt=n=>'₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+      document.getElementById('dept-type-totals').innerHTML=`
+        <div class="type-total-card tc-blue">
+          <div class="type-total-label">Office Supplies</div>
+          <div class="type-total-amount">${fmtAmt(typeTotals['Office Supplies'])}</div>
+          <div class="type-total-count">${typeCounts['Office Supplies']} item${typeCounts['Office Supplies']!==1?'s':''}</div>
+        </div>
+        <div class="type-total-card tc-gold">
+          <div class="type-total-label">Other Supplies</div>
+          <div class="type-total-amount a-gold">${fmtAmt(typeTotals['Other Supplies'])}</div>
+          <div class="type-total-count">${typeCounts['Other Supplies']} item${typeCounts['Other Supplies']!==1?'s':''}</div>
+        </div>
+        <div class="type-total-card tc-purple">
+          <div class="type-total-label">Machinery</div>
+          <div class="type-total-amount a-purple">${fmtAmt(typeTotals['Machinery'])}</div>
+          <div class="type-total-count">${typeCounts['Machinery']} item${typeCounts['Machinery']!==1?'s':''}</div>
+        </div>`;
+
       renderTable(list,'dept-table','dept-cards',false);
     }
     window.filterDept=filterDeptPage;
 
-    // Badges / rendering
+    // ── Badges / rendering ──
     function avBadge(a){ return (a||'').toLowerCase().includes('not')?`<span class="badge badge-red">Not Available</span>`:`<span class="badge badge-green">Available</span>`; }
-    function tBadge(t){ return t==='CSE'?`<span class="badge badge-blue">CSE</span>`:t==='Machinery'?`<span class="badge badge-gold">Machinery</span>`:`<span class="badge badge-gray">${t||'—'}</span>`; }
+    function tBadge(t){
+      const nt = normalizeType(t);
+      if(nt==='Office Supplies') return `<span class="badge badge-blue">Office Supplies</span>`;
+      if(nt==='Machinery')       return `<span class="badge badge-gold">Machinery</span>`;
+      if(nt==='Other Supplies')  return `<span class="badge badge-purple">Other Supplies</span>`;
+      return `<span class="badge badge-gray">${nt||'—'}</span>`;
+    }
 
     function renderTable(list,tableId,cardsId,showDept){
       const el=document.getElementById(tableId);
@@ -1057,14 +1330,14 @@ const firebaseConfig = {
         </div>`).join('');
     }
 
-    // Detail modal
+    // ── Detail modal ──
     function showItemModal(id){
       const i=S.items.find(x=>x.id===id); if(!i) return;
       document.getElementById('item-modal-title').textContent=i.item||'Item';
       document.getElementById('item-modal-body').innerHTML=`
         <div class="detail-section">
           <div class="detail-section-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>Item Details</div>
-          ${dr('Item Name',i.item)}${dr('Department',i.department)}${dr('Type',i.type)}
+          ${dr('Item Name',i.item)}${dr('Department',i.department)}${dr('Supply Category',normalizeType(i.type))}
           ${dr('Unit of Measure',i.unit_of_measure)}${dr('Month',i.month)}
         </div>
         <div class="detail-section">
@@ -1086,7 +1359,7 @@ const firebaseConfig = {
     }
     window.showItemModal=showItemModal;
 
-    // Forms
+    // ── Forms ──
     function openAddModal(){
       S.editId=null;
       document.getElementById('form-title').textContent='Add Procurement Item';
@@ -1098,7 +1371,7 @@ const firebaseConfig = {
       S.editId=id; closeModal('modal-item');
       const i=S.items.find(x=>x.id===id);
       document.getElementById('form-title').textContent='Edit Procurement Item';
-      document.getElementById('form-body').innerHTML=itemForm(i);
+      document.getElementById('form-body').innerHTML=itemForm({...i, type: normalizeType(i.type)});
       openModal('modal-form');
     }
     window.openEditModal=openEditModal;
@@ -1107,9 +1380,12 @@ const firebaseConfig = {
     function fs(name,label,opts,v={}){ return `<div class="form-group"><label class="form-label">${label}</label><select class="form-select" name="${name}"><option value="">—</option>${opts.map(o=>`<option ${(v[name]||'')==o?'selected':''}>${o}</option>`).join('')}</select></div>`; }
 
     function itemForm(i={}){
+      // Use pre-selected dept if on a dept page
+      const defaultDept = i.department || (S.dept && DEPTS.includes(S.dept) ? S.dept : '');
+      const iWithDept = {...i, department: defaultDept};
       return `<div class="form-grid" id="ifrm">
         <div class="form-group form-full"><label class="form-label">Item Name</label><input class="form-input" type="text" name="item" value="${ea(i.item||'')}"></div>
-        ${fs('department','Department',DEPTS,i)}${fs('type','Type',TYPES,i)}
+        ${fs('department','Department',DEPTS,iWithDept)}${fs('type','Supply Category',TYPES,i)}
         ${fs('month','Month',MONTHS,i)}${fi('unit_of_measure','Unit of Measure',i)}
         ${fi('unit_price','Unit Price (₱)',i,'number')}${fi('quantity','Quantity',i,'number')}
         ${fs('availability','Availability',['Available','Not Available'],i)}
@@ -1129,6 +1405,7 @@ const firebaseConfig = {
       document.querySelectorAll('#ifrm [name]').forEach(el=>data[el.name]=el.value);
       const up=parseFloat(data.unit_price||0), qty=parseFloat(data.quantity||0);
       data.total_amount=(up*qty).toFixed(2);
+      data.type = normalizeType(data.type); // ensure stored as Office Supplies, not CSE
       Object.keys(data).forEach(k=>{ if(data[k]==='') data[k]=null; });
       try{
         if(S.editId){
@@ -1178,7 +1455,7 @@ const firebaseConfig = {
         if(!list.length) return '';
         return `<tr class="sec-head"><td colspan="23" class="tl">${label}</td></tr>${list.map((item,i)=>itemRow(item,i+1)).join('')}<tr class="subtotal-row"><td colspan="21" class="tr">Sub-Total (${label})</td><td></td><td class="tr bold">₱${list.reduce((s,i)=>s+parseFloat(i.total_amount||0),0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
       }
-      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — ${dept}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">For items not available in the PS-DBM catalogue but regularly purchased from other sources</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`;
+      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — ${dept}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">For items not available in the PS-DBM catalogue but regularly purchased from other sources</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">${dept} — Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><script>window.onload=function(){window.print();<\/script></body></html>`;
       const win=window.open('','_blank','width=1400,height=900');
       win.document.write(html); win.document.close();
     }
@@ -1206,13 +1483,19 @@ const firebaseConfig = {
         if(!list.length) return '';
         return `<tr class="sec-head"><td colspan="23" class="tl">${label}</td></tr>${list.map((item,i)=>itemRow(item,i+1)).join('')}<tr class="subtotal-row"><td colspan="21" class="tr">Sub-Total (${label})</td><td></td><td class="tr bold">₱${list.reduce((s,i)=>s+parseFloat(i.total_amount||0),0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
       }
-      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — All Departments</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">For items not available in the PS-DBM catalogue but regularly purchased from other sources</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`;
+      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — All Departments</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">All Departments — Municipality of Balayan, Batangas</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><script>window.onload=function(){window.print();<\/script></body></html>`;
       const win=window.open('','_blank','width=1400,height=900');
       win.document.write(html); win.document.close();
     }
     window.printAll=printAll;
 
-    loadDashboard();
+    // ── Bootstrap ──
+    async function init(){
+      await loadDepts();
+      loadDashboard();
+    }
+    init();
+
   } catch(e){
     document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#F4F6FA;font-family:sans-serif;text-align:center;padding:20px"><div><svg style="width:52px;height:52px;color:#C0271A;margin:0 auto 16px;display:block" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l8 16H2L10 2z"/><path d="M10 8v4M10 14v.5"/></svg><div style="font-size:18px;margin-bottom:8px;color:#0F1929;font-weight:700">Firebase Connection Failed</div><div style="font-size:13px;color:#6B7280">'+e.message+'</div></div></div>';
   }
