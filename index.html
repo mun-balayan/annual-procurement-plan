@@ -1611,32 +1611,243 @@ const firebaseConfig = {
     }
     window.confirmDelete=confirmDelete;
 
+    // ═══ SHARED PRINT ENGINE ═══
+    function buildPrintHTML(items, deptLabel, titleSuffix){
+      const NCOLS = 26; // total columns
+      const grandTotal = items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
+      const datePrinted = new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+      const MTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const Q1=['January','February','March'],Q2=['April','May','June'],Q3=['July','August','September'],Q4=['October','November','December'];
+      const MKEY={January:'qty_jan',February:'qty_feb',March:'qty_mar',April:'qty_apr',May:'qty_may',June:'qty_jun',July:'qty_jul',August:'qty_aug',September:'qty_sep',October:'qty_oct',November:'qty_nov',December:'qty_dec'};
+      const fmtN = n => n>0 ? n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+      const fmtC = n => '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+      function mQty(item,m){ const v=parseFloat(item[MKEY[m]]||0); return v>0?v:0; }
+      function qSum(item,months){ return months.reduce((s,m)=>s+mQty(item,m),0); }
+      function qAmt(item,months){ const q=qSum(item,months); return q>0?(q*parseFloat(item.unit_price||0)):0; }
+
+      function itemRow(item,idx){
+        const up=parseFloat(item.unit_price||0);
+        const tQty=parseFloat(item.quantity)||0;
+        const tAmt=parseFloat(item.total_amount||0);
+        const q1=qSum(item,Q1),q1a=qAmt(item,Q1);
+        const q2=qSum(item,Q2),q2a=qAmt(item,Q2);
+        const q3=qSum(item,Q3),q3a=qAmt(item,Q3);
+        const q4=qSum(item,Q4),q4a=qAmt(item,Q4);
+        const fc = n=>n>0?n:'';
+        return `<tr>
+          <td class="tc">${idx}</td>
+          <td class="tl item-col">${item.item||''}</td>
+          <td class="tc">${item.unit_of_measure||''}</td>
+          ${MTHS.map(m=>`<td class="tc">${fc(mQty(item,m))}</td>`).join('')}
+          <td class="tc bold">${fc(q1)}</td><td class="tr">${fmtN(q1a)}</td>
+          <td class="tc bold">${fc(q2)}</td><td class="tr">${fmtN(q2a)}</td>
+          <td class="tc bold">${fc(q3)}</td><td class="tr">${fmtN(q3a)}</td>
+          <td class="tc bold">${fc(q4)}</td><td class="tr">${fmtN(q4a)}</td>
+          <td class="tc bold">${tQty||''}</td>
+          <td class="tr">${up>0?fmtN(up):''}</td>
+          <td class="tr bold">${tAmt>0?fmtN(tAmt):''}</td>
+        </tr>`;
+      }
+
+      // Build rows grouped by category then availability
+      const CATS = ['Office Supplies','Other Supplies','Machinery'];
+      const CAT_LABELS = {'Office Supplies':'OFFICE SUPPLIES','Other Supplies':'OTHER SUPPLIES','Machinery':'MACHINERY / EQUIPMENT'};
+      let rowsHTML = '';
+      let runningIdx = 1;
+
+      CATS.forEach(cat => {
+        const catItems = items.filter(i=>normalizeType(i.type)===cat);
+        if(!catItems.length) return;
+
+        const catAvail    = catItems.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
+        const catNotAvail = catItems.filter(i=> (i.availability||'').toLowerCase().includes('not'));
+        const catTotal    = catItems.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
+
+        // Category header
+        rowsHTML += `<tr class="cat-head"><td colspan="${NCOLS}" class="tl">${CAT_LABELS[cat]}</td></tr>`;
+
+        if(catAvail.length){
+          rowsHTML += `<tr class="avail-head"><td colspan="${NCOLS}" class="tl">AVAILABLE AT PROCUREMENT SERVICE STORES</td></tr>`;
+          catAvail.forEach(item=>{ rowsHTML+=itemRow(item,runningIdx++); });
+          rowsHTML += `<tr class="subtotal-row">
+            <td colspan="${NCOLS-3}" class="tr italic">Sub-Total (Available)</td>
+            <td></td><td></td>
+            <td class="tr bold">${fmtN(catAvail.reduce((s,i)=>s+parseFloat(i.total_amount||0),0))}</td>
+          </tr>`;
+        }
+
+        if(catNotAvail.length){
+          rowsHTML += `<tr class="notavail-head"><td colspan="${NCOLS}" class="tl">NOT AVAILABLE AT PROCUREMENT SERVICE STORES</td></tr>`;
+          catNotAvail.forEach(item=>{ rowsHTML+=itemRow(item,runningIdx++); });
+          rowsHTML += `<tr class="subtotal-row">
+            <td colspan="${NCOLS-3}" class="tr italic">Sub-Total (Not Available)</td>
+            <td></td><td></td>
+            <td class="tr bold">${fmtN(catNotAvail.reduce((s,i)=>s+parseFloat(i.total_amount||0),0))}</td>
+          </tr>`;
+        }
+
+        // Category subtotal
+        rowsHTML += `<tr class="cat-subtotal">
+          <td colspan="${NCOLS-3}" class="tr">Sub-Total — ${CAT_LABELS[cat]}</td>
+          <td></td><td></td>
+          <td class="tr bold">${fmtN(catTotal)}</td>
+        </tr>`;
+      });
+
+      // Grand total
+      rowsHTML += `<tr class="grand-total">
+        <td colspan="${NCOLS-1}" class="tr">GRAND TOTAL</td>
+        <td class="tr">${fmtC(grandTotal)}</td>
+      </tr>`;
+
+      const PRINT_CSS = `
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Times New Roman',serif;font-size:8.5px;color:#000;background:#fff;}
+        .page{padding:8mm 10mm 12mm;}
+        /* ── TITLE BLOCK ── */
+        .form-header{margin-bottom:5px;}
+        .form-header-meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:8px;margin-bottom:3px;}
+        .form-header-meta-left{line-height:1.6;}
+        .form-header-meta-right{text-align:right;line-height:1.6;}
+        .form-title-main{text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
+        .form-title-sub{text-align:center;font-size:8.5px;font-style:italic;color:#333;margin-bottom:5px;}
+        /* ── AGENCY INFO BOX ── */
+        .info-box{border:1px solid #555;padding:4px 8px;margin-bottom:5px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:0;font-size:7.5px;}
+        .info-cell{padding:2px 6px 2px 0;border-right:1px solid #bbb;display:flex;align-items:flex-end;gap:4px;}
+        .info-cell:last-child{border-right:none;}
+        .info-lbl{color:#555;white-space:nowrap;}
+        .info-val{font-weight:700;border-bottom:1px solid #000;flex:1;padding-bottom:1px;min-width:30px;}
+        /* ── TABLE ── */
+        table{width:100%;border-collapse:collapse;font-size:6.2px;}
+        th,td{border:1px solid #555;padding:1.5px 2px;vertical-align:middle;}
+        th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;line-height:1.3;}
+        th.grp-hd{background:#0d2145;font-size:6px;}
+        th.q-hd{background:#1e4070;font-size:5.5px;}
+        th.m-hd{background:#2d4f7c;font-size:5px;}
+        .item-col{min-width:90px;max-width:120px;word-break:break-word;white-space:normal;line-height:1.3;}
+        .tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}
+        .bold{font-weight:700;}.italic{font-style:italic;}
+        /* ── SECTION ROWS ── */
+        .cat-head td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;text-transform:uppercase;letter-spacing:.8px;padding:3px 6px;border-color:#1a3358;}
+        .avail-head td{background:#e8f0e8;color:#1a5c1a;font-weight:700;font-size:7px;text-transform:uppercase;letter-spacing:.4px;padding:2px 6px;border-left:3px solid #2e7d32;}
+        .notavail-head td{background:#fdecea;color:#b71c1c;font-weight:700;font-size:7px;text-transform:uppercase;letter-spacing:.4px;padding:2px 6px;border-left:3px solid #c62828;}
+        .subtotal-row td{background:#f5f5f5;font-weight:600;border-top:1.5px solid #666;font-size:7px;}
+        .cat-subtotal td{background:#dce6f1;font-weight:900;font-size:7.5px;border-top:2px solid #1a3358;color:#1a3358;}
+        .grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8.5px;border-top:2.5px solid #0d2145;padding:3px 4px;}
+        tbody tr:not(.cat-head):not(.avail-head):not(.notavail-head):not(.subtotal-row):not(.cat-subtotal):not(.grand-total):nth-child(even){background:rgba(27,58,107,.03);}
+        /* ── SIGNATURE BLOCK ── */
+        .sig-block{display:flex;justify-content:space-between;margin-top:36px;gap:24px;}
+        .sig{flex:1;text-align:center;}
+        .sig-name-line{border-top:1px solid #000;margin-top:30px;padding-top:3px;}
+        .sig-name{font-weight:900;font-size:7.5px;text-transform:uppercase;}
+        .sig-role{font-size:7px;font-weight:700;color:#333;margin-top:1px;}
+        .sig-title{font-size:6.5px;color:#555;}
+        /* ── PRINT TOOLBAR ── */
+        .print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:9px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+        @media print{
+          .print-toolbar{display:none!important;}
+          .page{padding-top:8mm!important;}
+          @page{size:legal landscape;margin:6mm;}
+          .cat-head{page-break-before:auto;}
+        }
+      `;
+
+      const tableHead = `<thead>
+        <tr>
+          <th rowspan="3" style="width:16px">#</th>
+          <th rowspan="3" class="item-col">Item &amp; Specifications</th>
+          <th rowspan="3" style="width:22px">Unit of<br>Measure</th>
+          <th colspan="5" class="grp-hd">Q1 — Jan / Feb / Mar</th>
+          <th colspan="5" class="grp-hd">Q2 — Apr / May / Jun</th>
+          <th colspan="5" class="grp-hd">Q3 — Jul / Aug / Sep</th>
+          <th colspan="5" class="grp-hd">Q4 — Oct / Nov / Dec</th>
+          <th rowspan="3" style="width:20px">Total<br>Qty</th>
+          <th rowspan="3" style="width:38px">Unit<br>Price</th>
+          <th rowspan="3" style="width:44px">Total<br>Amount</th>
+        </tr>
+        <tr>
+          <th class="m-hd">Jan</th><th class="m-hd">Feb</th><th class="m-hd">Mar</th>
+          <th class="q-hd" style="width:18px">Qty</th><th class="q-hd" style="width:38px">Amount</th>
+          <th class="m-hd">Apr</th><th class="m-hd">May</th><th class="m-hd">Jun</th>
+          <th class="q-hd" style="width:18px">Qty</th><th class="q-hd" style="width:38px">Amount</th>
+          <th class="m-hd">Jul</th><th class="m-hd">Aug</th><th class="m-hd">Sep</th>
+          <th class="q-hd" style="width:18px">Qty</th><th class="q-hd" style="width:38px">Amount</th>
+          <th class="m-hd">Oct</th><th class="m-hd">Nov</th><th class="m-hd">Dec</th>
+          <th class="q-hd" style="width:18px">Qty</th><th class="q-hd" style="width:38px">Amount</th>
+        </tr>
+      </thead>`;
+
+      const toolbar = `<style>.print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:9px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;}@media print{.print-toolbar{display:none!important;}}<\/style>
+      <div class="print-toolbar">
+        <button onclick="window.print()" style="background:#fff;color:#1a3358;border:none;padding:7px 18px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Document
+        </button>
+        <span style="font-size:11px;opacity:.65">Ctrl+P · Legal · Landscape</span>
+        <button onclick="window.close()" style="margin-left:auto;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.25);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer">✕ Close</button>
+      </div>
+      <div style="height:42px"></div>`;
+
+      return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>APP-CSE 2026 — ${titleSuffix}</title>
+        <style>${PRINT_CSS}</style>
+      </head><body>
+        ${toolbar}
+        <div class="page">
+          <div class="form-header">
+            <div class="form-header-meta">
+              <div class="form-header-meta-left">
+                Province, City or Municipality: <strong>Balayan, Batangas</strong>
+              </div>
+              <div class="form-header-meta-right">
+                Plan Control No.: _________________ &nbsp;&nbsp; Page 1 of 1
+              </div>
+            </div>
+            <div class="form-title-main">Annual Procurement Plan for 2026</div>
+            <div class="form-title-sub">For Common-Use Supplies and Equipment (APP-CSE)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-cell"><span class="info-lbl">Department/Office:</span><span class="info-val">${deptLabel}</span></div>
+            <div class="info-cell"><span class="info-lbl">Regular:</span><span class="info-val"></span></div>
+            <div class="info-cell"><span class="info-lbl">Contingency:</span><span class="info-val"></span></div>
+            <div class="info-cell"><span class="info-lbl">Total:</span><span class="info-val">${fmtC(grandTotal)}</span></div>
+            <div class="info-cell"><span class="info-lbl">Date Submitted:</span><span class="info-val">${datePrinted}</span></div>
+          </div>
+          <table>${tableHead}<tbody>${rowsHTML}</tbody></table>
+          <div class="sig-block">
+            <div class="sig">
+              <div class="sig-name-line">
+                <div class="sig-name">_________________________________</div>
+                <div class="sig-role">Prepared by:</div>
+                <div class="sig-title">Property/Supply Officer</div>
+              </div>
+            </div>
+            <div class="sig">
+              <div class="sig-name-line">
+                <div class="sig-name">NORMANDO BAGAY</div>
+                <div class="sig-role">Certified Funds Available</div>
+                <div class="sig-title">Accountant / Budget Officer</div>
+              </div>
+            </div>
+            <div class="sig">
+              <div class="sig-name-line">
+                <div class="sig-name">ELISA E. ABAD</div>
+                <div class="sig-role">Approved by:</div>
+                <div class="sig-title">Head of Office/Agency</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </body></html>`;
+    }
+
     // ═══ PRINT — DEPT ═══
     function printDept(){
       const dept=S.dept; if(!dept){ toast('No department selected','error'); return; }
       const items=S.items.filter(i=>i.department===dept);
       if(!items.length){ toast('No items to print','error'); return; }
-      const available   =items.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
-      const notAvailable=items.filter(i=> (i.availability||'').toLowerCase().includes('not'));
-      const grandTotal  =items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
-      const datePrinted =new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
-      const MTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-      const Q1=['January','February','March'],Q2=['April','May','June'],Q3=['July','August','September'],Q4=['October','November','December'];
-      const MKEY={January:'qty_jan',February:'qty_feb',March:'qty_mar',April:'qty_apr',May:'qty_may',June:'qty_jun',July:'qty_jul',August:'qty_aug',September:'qty_sep',October:'qty_oct',November:'qty_nov',December:'qty_dec'};
-      function mQty(item,month){ const v=parseFloat(item[MKEY[month]]||0); return v>0?v:''; }
-      function qSum(item,months){ return months.reduce((s,m)=>{ const v=mQty(item,m); return s+(v===''?0:v); },0); }
-      function qAmt(item,months){ const q=qSum(item,months); return q>0?(q*parseFloat(item.unit_price||0)):0; }
-      function itemRow(item,idx){
-        const up=parseFloat(item.unit_price||0),tQty=parseFloat(item.quantity)||0,tAmt=parseFloat(item.total_amount||0);
-        const q1=qSum(item,Q1),q1a=qAmt(item,Q1),q2=qSum(item,Q2),q2a=qAmt(item,Q2),q3=qSum(item,Q3),q3a=qAmt(item,Q3),q4=qSum(item,Q4),q4a=qAmt(item,Q4);
-        const fmt=n=>n>0?n:'',fmtA=n=>n>0?n.toLocaleString('en-PH',{minimumFractionDigits:2}):'';
-        return `<tr><td class="tc">${idx}</td><td class="tl">${item.item||''}</td><td class="tc">${item.unit_of_measure||''}</td>${MTHS.map(m=>`<td class="tc">${mQty(item,m)||''}</td>`).join('')}<td class="tc bold">${fmt(q1)}</td><td class="tr">${fmtA(q1a)}</td><td class="tc bold">${fmt(q2)}</td><td class="tr">${fmtA(q2a)}</td><td class="tc bold">${fmt(q3)}</td><td class="tr">${fmtA(q3a)}</td><td class="tc bold">${fmt(q4)}</td><td class="tr">${fmtA(q4a)}</td><td class="tc bold">${tQty}</td><td class="tr">${up.toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td class="tr bold">${tAmt.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
-      }
-      function sectionRows(list,label){
-        if(!list.length) return '';
-        return `<tr class="sec-head"><td colspan="23" class="tl">${label}</td></tr>${list.map((item,i)=>itemRow(item,i+1)).join('')}<tr class="subtotal-row"><td colspan="21" class="tr">Sub-Total (${label})</td><td></td><td class="tr bold">₱${list.reduce((s,i)=>s+parseFloat(i.total_amount||0),0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
-      }
-      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — ${dept}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">For items not available in the PS-DBM catalogue but regularly purchased from other sources</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">${dept} — Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><style>.print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}@media print{.print-toolbar{display:none!important;}.page{padding-top:0!important;}}<\/style><div class="print-toolbar"><button onclick="window.print()" style="background:#fff;color:#1a3358;border:none;padding:8px 20px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Document</button><span style="font-size:12px;opacity:.7">Click Print Document or press Ctrl+P</span><button onclick="window.close()" style="margin-left:auto;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">✕ Close</button></div><div style="height:44px"></div></body></html>`;
+      const html=buildPrintHTML(items, `${dept} — Municipality of Balayan`, dept);
       const win=window.open('','_blank','width=1400,height=900');
       win.document.write(html); win.document.close();
     }
@@ -1645,27 +1856,7 @@ const firebaseConfig = {
     // ═══ PRINT — ALL ═══
     function printAll(){
       const items=S.items; if(!items.length){ toast('No items to print','error'); return; }
-      const available   =items.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
-      const notAvailable=items.filter(i=> (i.availability||'').toLowerCase().includes('not'));
-      const grandTotal  =items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
-      const datePrinted =new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
-      const MTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-      const Q1=['January','February','March'],Q2=['April','May','June'],Q3=['July','August','September'],Q4=['October','November','December'];
-      const MKEY={January:'qty_jan',February:'qty_feb',March:'qty_mar',April:'qty_apr',May:'qty_may',June:'qty_jun',July:'qty_jul',August:'qty_aug',September:'qty_sep',October:'qty_oct',November:'qty_nov',December:'qty_dec'};
-      function mQty(item,month){ const v=parseFloat(item[MKEY[month]]||0); return v>0?v:''; }
-      function qSum(item,months){ return months.reduce((s,m)=>{ const v=mQty(item,m); return s+(v===''?0:v); },0); }
-      function qAmt(item,months){ const q=qSum(item,months); return q>0?(q*parseFloat(item.unit_price||0)):0; }
-      function itemRow(item,idx){
-        const up=parseFloat(item.unit_price||0),tQty=parseFloat(item.quantity)||0,tAmt=parseFloat(item.total_amount||0);
-        const q1=qSum(item,Q1),q1a=qAmt(item,Q1),q2=qSum(item,Q2),q2a=qAmt(item,Q2),q3=qSum(item,Q3),q3a=qAmt(item,Q3),q4=qSum(item,Q4),q4a=qAmt(item,Q4);
-        const fmt=n=>n>0?n:'',fmtA=n=>n>0?n.toLocaleString('en-PH',{minimumFractionDigits:2}):'';
-        return `<tr><td class="tc">${idx}</td><td class="tl">${item.item||''}</td><td class="tc">${item.unit_of_measure||''}</td>${MTHS.map(m=>`<td class="tc">${mQty(item,m)||''}</td>`).join('')}<td class="tc bold">${fmt(q1)}</td><td class="tr">${fmtA(q1a)}</td><td class="tc bold">${fmt(q2)}</td><td class="tr">${fmtA(q2a)}</td><td class="tc bold">${fmt(q3)}</td><td class="tr">${fmtA(q3a)}</td><td class="tc bold">${fmt(q4)}</td><td class="tr">${fmtA(q4a)}</td><td class="tc bold">${tQty}</td><td class="tr">${up.toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td class="tr bold">${tAmt.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
-      }
-      function sectionRows(list,label){
-        if(!list.length) return '';
-        return `<tr class="sec-head"><td colspan="23" class="tl">${label}</td></tr>${list.map((item,i)=>itemRow(item,i+1)).join('')}<tr class="subtotal-row"><td colspan="21" class="tr">Sub-Total (${label})</td><td></td><td class="tr bold">₱${list.reduce((s,i)=>s+parseFloat(i.total_amount||0),0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>`;
-      }
-      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Annual Procurement Planning — All Departments</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Times New Roman',serif;font-size:9px;color:#000;background:#fff;}.page{padding:10mm;}.form-title{text-align:center;margin-bottom:6px;}.form-title-main{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;}.form-title-sub{font-size:8px;color:#333;margin-top:2px;}.agency-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px;margin-bottom:6px;font-size:8px;border:1px solid #999;padding:5px 8px;}.agency-row{display:flex;gap:4px;align-items:flex-end;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:2px;}.agency-label{color:#555;white-space:nowrap;}.agency-val{flex:1;font-weight:700;}table{width:100%;border-collapse:collapse;font-size:6.5px;}th,td{border:1px solid #444;padding:2px 2px;vertical-align:middle;}th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;}th.sub-h{background:#2d4f7c;font-size:5.5px;}th.grp{background:#0d2145;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.bold{font-weight:700;}.sec-head td{background:#dce6f1;font-weight:900;font-size:7.5px;text-transform:uppercase;letter-spacing:.5px;padding:3px 6px;color:#1a3358;}.subtotal-row td{background:#f0f4f8;font-weight:700;border-top:1.5px solid #333;font-size:7px;}.grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8px;}.sig-block{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.sig{flex:1;text-align:center;}.sig-line{border-top:1px solid #000;padding-top:4px;margin-top:28px;}.sig-name{font-weight:900;font-size:8px;text-transform:uppercase;}.sig-role{font-size:7px;color:#333;margin-top:2px;font-weight:700;}.sig-title{font-size:6.5px;color:#555;}@media print{body{margin:0;}@page{size:legal landscape;margin:7mm;}}</style></head><body><div class="page"><div class="form-title"><div class="form-title-main">Annual Procurement Plan — Common-Use Supplies and Equipment (APP-CSE) 2025</div><div class="form-title-sub">All Departments — Municipality of Balayan, Batangas</div></div><div class="agency-block"><div class="agency-row"><span class="agency-label">Department/Bureau/Office:</span><span class="agency-val">Municipality of Balayan</span></div><div class="agency-row"><span class="agency-label">Region:</span><span class="agency-val">CALABARZON (Region IV-A)</span></div><div class="agency-row"><span class="agency-label">Date Printed:</span><span class="agency-val">${datePrinted}</span></div></div><table><thead><tr><th rowspan="3">#</th><th rowspan="3" style="min-width:100px">Item &amp; Specification</th><th rowspan="3">Unit</th><th colspan="9" class="grp">Monthly Quantity Requirement</th><th colspan="8" class="grp">Quarterly Summary</th><th rowspan="3">Total Qty</th><th rowspan="3">Unit Price</th><th rowspan="3">Total Amount</th></tr><tr><th colspan="3" class="grp">Q1</th><th rowspan="2" class="sub-h">Q1</th><th rowspan="2" class="sub-h">Q1 AMT</th><th colspan="3" class="grp">Q2</th><th rowspan="2" class="sub-h">Q2</th><th rowspan="2" class="sub-h">Q2 AMT</th><th colspan="3" class="grp">Q3</th><th rowspan="2" class="sub-h">Q3</th><th rowspan="2" class="sub-h">Q3 AMT</th><th colspan="3" class="grp">Q4</th><th rowspan="2" class="sub-h">Q4</th><th rowspan="2" class="sub-h">Q4 AMT</th></tr><tr><th class="sub-h">Jan</th><th class="sub-h">Feb</th><th class="sub-h">Mar</th><th class="sub-h">Apr</th><th class="sub-h">May</th><th class="sub-h">Jun</th><th class="sub-h">Jul</th><th class="sub-h">Aug</th><th class="sub-h">Sep</th><th class="sub-h">Oct</th><th class="sub-h">Nov</th><th class="sub-h">Dec</th></tr></thead><tbody>${sectionRows(available,'DBM AVAILABLE')}${sectionRows(notAvailable,'DBM NOT AVAILABLE')}<tr class="grand-total"><td colspan="22" class="tr">GRAND TOTAL</td><td></td><td class="tr">₱${grandTotal.toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr></tbody></table><div class="sig-block"><div class="sig"><div class="sig-line"><div class="sig-name">_______________________________</div><div class="sig-role">Prepared by:</div><div class="sig-title">Property/Supply Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">NORMANDO BAGAY</div><div class="sig-role">Certified Funds Available</div><div class="sig-title">Accountant / Budget Officer</div></div></div><div class="sig"><div class="sig-line"><div class="sig-name">ELISA E. ABAD</div><div class="sig-role">Approved by:</div><div class="sig-title">Head of Office/Agency</div></div></div></div></div><style>.print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}@media print{.print-toolbar{display:none!important;}.page{padding-top:0!important;}}<\/style><div class="print-toolbar"><button onclick="window.print()" style="background:#fff;color:#1a3358;border:none;padding:8px 20px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Document</button><span style="font-size:12px;opacity:.7">Click Print Document or press Ctrl+P</span><button onclick="window.close()" style="margin-left:auto;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">✕ Close</button></div><div style="height:44px"></div></body></html>`;
+      const html=buildPrintHTML(items, 'Municipality of Balayan — All Departments', 'All Departments');
       const win=window.open('','_blank','width=1400,height=900');
       win.document.write(html); win.document.close();
     }
