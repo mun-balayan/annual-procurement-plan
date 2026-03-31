@@ -587,11 +587,119 @@ tbody td:last-child{border-right:none;}
 .dept-pill:hover{border-color:var(--blue);color:var(--blue);}
 .dept-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:none;}
 
+/* ══════════════════════════════════════
+   SIDEBAR LAYOUT
+══════════════════════════════════════ */
+#main-area{display:flex;flex:1;overflow:hidden;position:relative;}
+
+/* Sidebar */
+#sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--blue);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  border-right:1px solid rgba(255,255,255,.07);
+  position:relative;z-index:10;
+}
+#sidebar::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:1px;
+  background:linear-gradient(180deg,rgba(212,152,14,.35) 0%,rgba(212,152,14,.1) 60%,transparent 100%);
+  pointer-events:none;
+}
+
+.sidebar-inner{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent;
+  padding-bottom:12px;
+}
+.sidebar-inner::-webkit-scrollbar{width:3px;}
+.sidebar-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:3px;}
+
+.sidebar-top-pad{height:6px;}
+
+.sidebar-sec-label{
+  padding:14px 15px 6px;
+  font-size:9px;font-weight:700;
+  color:rgba(255,255,255,.28);
+  letter-spacing:1.3px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+.sidebar-manage-btn{
+  font-size:9px;color:#FFD968;
+  background:rgba(212,152,14,.15);
+  border:1px solid rgba(212,152,14,.28);
+  border-radius:6px;padding:2px 8px;
+  cursor:pointer;font-family:var(--fu);font-weight:700;
+  transition:background .15s;letter-spacing:.2px;
+}
+.sidebar-manage-btn:hover{background:rgba(212,152,14,.28);}
+
+.sidebar-sep{
+  height:1px;background:rgba(255,255,255,.07);
+  margin:7px 14px;
+}
+
+/* Core sidebar nav buttons */
+.snav-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 15px;
+  color:rgba(255,255,255,.58);
+  background:none;
+  border:none;border-left:3px solid transparent;
+  width:100%;font-size:13px;
+  font-family:var(--fu);font-weight:500;
+  cursor:pointer;transition:all .15s;
+  text-align:left;position:relative;
+}
+.snav-btn svg{width:16px;height:16px;flex-shrink:0;opacity:.65;transition:opacity .15s;}
+.snav-btn:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.07);border-left-color:rgba(212,152,14,.4);}
+.snav-btn:hover svg{opacity:1;}
+.snav-btn.active{color:#fff;background:rgba(255,255,255,.1);border-left-color:var(--gold);font-weight:600;}
+.snav-btn.active svg{opacity:1;}
+
+/* Dept nav buttons — slightly compact */
+.snav-dept-btn{font-size:12.5px;padding:9px 13px 9px 15px;}
+
+.snav-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.snav-badge{
+  background:rgba(255,255,255,.09);
+  border-radius:20px;padding:1px 8px;
+  font-size:10px;font-family:var(--fm);
+  color:rgba(255,255,255,.45);
+  flex-shrink:0;min-width:22px;text-align:center;
+  transition:all .15s;
+}
+.snav-btn.active .snav-badge{background:rgba(212,152,14,.28);color:#FFD968;}
+
+/* Sidebar footer */
+.sidebar-footer{
+  padding:10px 15px;
+  border-top:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+.sidebar-footer-label{font-size:8.5px;color:rgba(255,255,255,.2);letter-spacing:.8px;text-transform:uppercase;font-weight:600;}
+.sidebar-footer-sub{font-size:8px;color:rgba(255,255,255,.12);margin-top:2px;letter-spacing:.3px;}
+
+/* Content wrap */
+#content-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* Sidebar overlay (mobile) */
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,25,41,.55);
+  backdrop-filter:blur(4px);
+  z-index:200;
+}
+#sidebar-overlay.show{display:block;}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1100px){
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .dash-grid{grid-template-columns:1fr;}
   .type-totals-row{grid-template-columns:repeat(3,1fr);}
+  #sidebar{width:190px;}
 }
 @media(max-width:768px){
   :root{--bar-h:54px;}
@@ -601,7 +709,7 @@ tbody td:last-child{border-right:none;}
   .stat-num{font-size:28px;}
   .stat-num.sm{font-size:17px;}
   .dash-grid{grid-template-columns:1fr;}
-  #tab-nav{display:none;}
+  #tab-nav{display:none!important;}
   #mobile-menu-btn{display:flex;}
   .tb-clock{display:none;}
   .btn-dept-top{display:none;}
@@ -623,6 +731,18 @@ tbody td:last-child{border-right:none;}
   .tb-right{padding:0 12px;}
   .type-totals-row{grid-template-columns:1fr 1fr;}
   .type-totals-row .type-total-card:last-child{grid-column:1/-1;}
+  /* Mobile sidebar: slide-in overlay */
+  #sidebar{
+    position:fixed;left:0;
+    top:var(--bar-h);bottom:0;
+    width:250px;
+    transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(.4,0,.2,1);
+    z-index:300;
+    box-shadow:4px 0 28px rgba(15,25,41,.4);
+  }
+  #sidebar.mobile-open{transform:translateX(0);}
+  .sidebar-footer{display:none;}
 }
 @media(max-width:390px){
   .stats-row{gap:8px;}
@@ -656,28 +776,10 @@ tbody td:last-child{border-right:none;}
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
   </button>
 
-  <div id="tab-nav">
-    <div class="tb-divider"></div>
-    <button class="tab-btn active" id="tab-dashboard" onclick="switchPage('dashboard')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
-      Dashboard
-    </button>
-    <div class="tb-divider"></div>
-    <button class="tab-btn" id="tab-items" onclick="switchPage('items')">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
-      All Items<span class="tab-badge" id="badge-all">—</span>
-    </button>
-    <div class="tb-divider"></div>
-    <!-- Dept tabs rendered dynamically -->
-    <div id="dept-tabs" style="display:contents"></div>
-  </div>
+  <div style="flex:1"></div>
 
   <div class="tb-right">
     <div class="tb-clock" id="topbar-clock"></div>
-    <button class="btn-dept-top" onclick="openDeptModal()">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v3M8 13h4"/></svg>
-      Departments
-    </button>
     <button class="btn-add-top" id="topbar-add-btn" onclick="openAddModal()">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
       Add Item
@@ -685,47 +787,62 @@ tbody td:last-child{border-right:none;}
   </div>
 </div>
 
-<!-- ═══ MOBILE DRAWER ═══ -->
-<div id="mobile-drawer" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(15,25,41,.55);backdrop-filter:blur(4px)" onclick="toggleMobileMenu()">
-  <div style="background:var(--blue);width:260px;height:100%;overflow-y:auto;box-shadow:4px 0 28px rgba(15,25,41,.4)" onclick="event.stopPropagation()">
-    <div style="padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:6px;display:flex;align-items:center;gap:12px">
-      <img src="./logo.png" style="width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 2px rgba(212,152,14,.6)" alt="Seal">
-      <div>
-        <div style="font-size:15px;font-weight:700;color:#fff">Annual Procurement Planning</div>
-        <div style="font-size:9.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px">Municipality of Balayan</div>
+<!-- ═══ MAIN AREA: SIDEBAR + CONTENT ═══ -->
+<div id="main-area">
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <div id="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top-pad"></div>
+
+      <!-- Core nav -->
+      <button class="snav-btn active" id="tab-dashboard" onclick="switchPage('dashboard')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
+        <span class="snav-label">Dashboard</span>
+      </button>
+      <button class="snav-btn" id="tab-items" onclick="switchPage('items')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
+        <span class="snav-label">All Items</span>
+        <span class="snav-badge" id="badge-all">—</span>
+      </button>
+
+      <div class="sidebar-sep"></div>
+
+      <!-- Departments -->
+      <div class="sidebar-sec-label">
+        Departments
+        <button class="sidebar-manage-btn" onclick="openDeptModal()">+ Manage</button>
       </div>
+      <div id="sidebar-depts"></div>
     </div>
-    <button onclick="switchPage('dashboard');toggleMobileMenu()" style="display:flex;align-items:center;gap:10px;padding:11px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13.5px;cursor:pointer;font-family:var(--fu);font-weight:500">
-      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
-      Dashboard
-    </button>
-    <button onclick="switchPage('items');toggleMobileMenu()" style="display:flex;align-items:center;gap:10px;padding:11px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13.5px;cursor:pointer;font-family:var(--fu);font-weight:500">
-      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
-      All Items
-    </button>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 5px">
-      <div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:1.2px;text-transform:uppercase;font-weight:600">Departments</div>
-      <button onclick="openDeptModal();toggleMobileMenu()" style="font-size:10px;color:#FFD968;background:rgba(212,152,14,.18);border:1px solid rgba(212,152,14,.3);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:var(--fu);font-weight:600">+ Manage</button>
+
+    <!-- Sidebar footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">APP-CSE v18</div>
+      <div class="sidebar-footer-sub">Municipality of Balayan</div>
     </div>
-    <!-- Dept buttons rendered dynamically -->
-    <div id="drawer-depts"></div>
   </div>
-</div>
 
-<!-- ═══ OFFLINE BANNER ═══ -->
-<div id="offline-banner">
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l16 16"/><path d="M8.5 5.2A6 6 0 0116 10M4 7.5A6 6 0 013.5 10M6.5 10A5 5 0 0110 8.5M10 12a2 2 0 010 4 2 2 0 010-4"/></svg>
-  Offline — view only. Changes cannot be saved.
-</div>
+  <!-- ═══ CONTENT WRAP ═══ -->
+  <div id="content-wrap">
 
-<!-- ═══ CONTENT ═══ -->
-<div id="content">
-  <!-- DASHBOARD -->
-  <div class="page active" id="page-dashboard">
-    <div id="dash-inner"><div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div></div>
-  </div>
-  <!-- ALL ITEMS -->
-  <div class="page" id="page-items">
+    <!-- ═══ OFFLINE BANNER ═══ -->
+    <div id="offline-banner">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l16 16"/><path d="M8.5 5.2A6 6 0 0116 10M4 7.5A6 6 0 013.5 10M6.5 10A5 5 0 0110 8.5M10 12a2 2 0 010 4 2 2 0 010-4"/></svg>
+      Offline — view only. Changes cannot be saved.
+    </div>
+
+    <!-- ═══ CONTENT ═══ -->
+    <div id="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div id="dash-inner"><div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div></div>
+      </div>
+      <!-- ALL ITEMS -->
+      <div class="page" id="page-items">
     <div class="page-header">
       <div>
         <div class="page-title">All <em>Procurement</em> Items</div>
@@ -813,7 +930,7 @@ tbody td:last-child{border-right:none;}
     <div id="dept-table"></div>
     <div class="mobile-cards" id="dept-cards"></div>
   </div>
-</div>
+</div><!-- /#content -->
 
 <!-- ═══ BOTTOM NAV ═══ -->
 <div id="bottom-nav">
@@ -832,7 +949,10 @@ tbody td:last-child{border-right:none;}
     </button>
   </div>
 </div>
-</div>
+
+</div><!-- /#content-wrap -->
+</div><!-- /#main-area -->
+</div><!-- /#shell -->
 
 <!-- ═══ MODALS ═══ -->
 <div class="modal-overlay" id="modal-item" onclick="closeOverlay(event,'modal-item')">
@@ -969,21 +1089,13 @@ const firebaseConfig = {
     }
 
     function renderDeptNav(){
-      // Tab nav dept buttons
-      const tabEl = document.getElementById('dept-tabs');
-      tabEl.innerHTML = DEPTS.map(d=>`
-        <button class="tab-btn" id="tab-${d}" onclick="switchDept('${d}')">
+      // Sidebar dept buttons
+      const sidebarEl = document.getElementById('sidebar-depts');
+      sidebarEl.innerHTML = DEPTS.map(d=>`
+        <button class="snav-btn snav-dept-btn" id="tab-${d}" onclick="switchDept('${d}')">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${deptIcon(d)}</svg>
-          ${d}<span class="tab-badge" id="badge-${d}">0</span>
-        </button>
-        <div class="tb-divider"></div>
-      `).join('');
-
-      // Mobile drawer dept buttons
-      const drawerEl = document.getElementById('drawer-depts');
-      drawerEl.innerHTML = DEPTS.map(d=>`
-        <button onclick="switchDept('${d}');toggleMobileMenu()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;color:rgba(255,255,255,.75);background:none;border:none;width:100%;font-size:13px;cursor:pointer;font-family:var(--fu)">
-          ${d}<span id="mdrawer-${d}" style="font-size:10px;background:rgba(212,152,14,.25);color:#FFD968;padding:1px 8px;border-radius:10px;font-family:var(--fm)">0</span>
+          <span class="snav-label">${d}</span>
+          <span class="snav-badge" id="badge-${d}">0</span>
         </button>
       `).join('');
     }
@@ -1095,7 +1207,7 @@ const firebaseConfig = {
     setInterval(updateTime,1000); updateTime();
 
     // ── Navigation ──
-    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); }
+    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); document.getElementById('sidebar').classList.remove('mobile-open'); const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show'); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); }
     window.switchPage=switchPage;
 
     function switchDept(dept){
@@ -1103,9 +1215,12 @@ const firebaseConfig = {
       document.getElementById('dept-heading').innerHTML=`<em>${dept}</em> Department`;
       document.getElementById('dept-sub').textContent=`Annual Procurement Plan — ${dept}`;
       const pb=document.getElementById('dept-print-btn'); if(pb) pb.style.display='';
-      document.querySelectorAll('.tab-btn,.bnav-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.snav-btn,.bnav-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(`tab-${dept}`)?.classList.add('active');
       document.getElementById('bnav-dept')?.classList.add('active');
+      // Close mobile sidebar
+      document.getElementById('sidebar').classList.remove('mobile-open');
+      const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show');
       filterDeptPage();
     }
     window.switchDept=switchDept;
@@ -1113,13 +1228,13 @@ const firebaseConfig = {
     function activatePage(pg){
       document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
       document.getElementById(`page-${pg}`).classList.add('active');
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(`tab-${pg}`)?.classList.add('active');
       document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(`bnav-${pg}`)?.classList.add('active');
     }
     window.refreshCurrent=()=>{ if(S.dept) switchDept(S.dept); else switchPage(S.page); };
-    function toggleMobileMenu(){ const d=document.getElementById('mobile-drawer'); d.style.display=d.style.display==='none'?'block':'none'; }
+    function toggleMobileMenu(){ const sb=document.getElementById('sidebar');const ov=document.getElementById('sidebar-overlay');const open=sb.classList.toggle('mobile-open');if(ov)ov.classList.toggle('show',open); }
     window.toggleMobileMenu=toggleMobileMenu;
 
     // ── Dashboard ──
@@ -1216,7 +1331,6 @@ const firebaseConfig = {
       DEPTS.forEach(d=>{
         const c=S.items.filter(i=>i.department===d).length;
         const el=document.getElementById(`badge-${d}`); if(el) el.textContent=c;
-        const mel=document.getElementById(`mdrawer-${d}`); if(mel) mel.textContent=c;
       });
     }
 
