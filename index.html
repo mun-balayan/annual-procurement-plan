@@ -515,6 +515,15 @@ tbody td:last-child{border-right:none;}
   background:var(--blue-light);color:var(--blue3);border:1px solid var(--blue-border);
   border-radius:10px;padding:1px 7px;margin-left:8px;letter-spacing:.3px;
 }
+.dept-rename-btn{
+  background:var(--bg);color:var(--ink3);border:1px solid var(--bdr);
+  border-radius:var(--r);width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.dept-rename-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.dept-rename-form{display:flex;align-items:center;gap:8px;width:100%;}
+.dept-rename-input{flex:1;}
+.dept-list-info{flex:1;}
 .dept-delete-btn{
   background:var(--red-light);border:1px solid var(--red-border);color:var(--red2);
   border-radius:var(--r);padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;
@@ -1079,10 +1088,21 @@ const firebaseConfig = {
     async function loadDepts(){
       try {
         const snap = await getDocs(deptCol());
-        CUSTOM_DEPT_DOCS = snap.docs.map(d=>({id:d.id, name:d.data().name})).filter(d=>d.name);
-        const customNames = CUSTOM_DEPT_DOCS.map(d=>d.name);
+        CUSTOM_DEPT_DOCS = snap.docs.map(d=>({id:d.id, name:d.data().name, renamedFrom:d.data().renamedFrom||null})).filter(d=>d.name);
+        // Apply renames to built-in dept array first
+        CUSTOM_DEPT_DOCS.forEach(doc=>{
+          if(doc.renamedFrom){
+            const bi = BUILTIN_DEPTS.indexOf(doc.renamedFrom);
+            if(bi>=0) BUILTIN_DEPTS[bi] = doc.name;
+          }
+        });
+        // Build full dept list: start with (possibly renamed) built-ins, then add any extra custom depts
+        const renamedOriginals = CUSTOM_DEPT_DOCS.filter(d=>d.renamedFrom).map(d=>d.renamedFrom);
         DEPTS = [...BUILTIN_DEPTS];
-        customNames.forEach(n=>{ if(!DEPTS.includes(n)) DEPTS.push(n); });
+        CUSTOM_DEPT_DOCS.forEach(d=>{
+          // Only add if it's not a rename of a builtin (those are already in BUILTIN_DEPTS)
+          if(!d.renamedFrom && !DEPTS.includes(d.name)) DEPTS.push(d.name);
+        });
       } catch(e){ /* use defaults */ }
       renderDeptNav();
       updateFilterDepts();
@@ -1093,7 +1113,6 @@ const firebaseConfig = {
       const sidebarEl = document.getElementById('sidebar-depts');
       sidebarEl.innerHTML = DEPTS.map(d=>`
         <button class="snav-btn snav-dept-btn" id="tab-${d}" onclick="switchDept('${d}')">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${deptIcon(d)}</svg>
           <span class="snav-label">${d}</span>
           <span class="snav-badge" id="badge-${d}">0</span>
         </button>
@@ -1110,7 +1129,11 @@ const firebaseConfig = {
       }
     }
 
-    // ── Department CRUD ──
+    // ── Department Management ──
+    // All departments (built-in and added) behave the same — can be renamed, never deleted.
+    // Built-ins have a Firestore doc in app_departments with { builtin:true, name, displayName }.
+    // Added depts also get a Firestore doc. Rename updates the doc + migrates items.
+
     function openDeptModal(){
       renderDeptList();
       document.getElementById('new-dept-name').value='';
@@ -1122,19 +1145,70 @@ const firebaseConfig = {
       const body = document.getElementById('dept-list-body');
       body.innerHTML = `<div class="dept-list">
         ${DEPTS.map(d=>{
-          const isBuiltin = BUILTIN_DEPTS.includes(d);
-          const customDoc = CUSTOM_DEPT_DOCS.find(x=>x.name===d);
           const cnt = S.items.filter(i=>i.department===d).length;
-          return `<div class="dept-list-item ${isBuiltin?'builtin':''}">
-            <div>
-              <div class="dept-list-name">${d}</div>
-              <div class="dept-list-meta">${cnt} item${cnt!==1?'s':''} registered</div>
+          return `<div class="dept-list-item">
+            <div class="dept-list-info">
+              <div class="dept-list-name" id="dlname-${d}">${d}</div>
+              <div class="dept-list-meta">${cnt} item${cnt!==1?'s':''} · built-in</div>
             </div>
-            ${!isBuiltin && customDoc ? `<button class="dept-delete-btn" onclick="confirmDeleteDept('${customDoc.id}','${d}')">Remove</button>` : ''}
+            <button class="dept-rename-btn" onclick="startRenameDept('${d}')" title="Rename">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M13.5 3.5a2.12 2.12 0 013 3L7 16H4v-3L13.5 3.5z"/></svg>
+            </button>
           </div>`;
         }).join('')}
       </div>`;
     }
+
+    function startRenameDept(oldName){
+      const row = document.querySelector(`#dlname-${oldName}`)?.closest('.dept-list-item');
+      if(!row) return;
+      row.innerHTML = `
+        <div class="dept-rename-form">
+          <input class="form-input dept-rename-input" id="rename-input-${oldName}" value="${oldName}" maxlength="20" style="flex:1;padding:6px 10px;font-size:13px;">
+          <button class="btn btn-primary btn-sm" onclick="confirmRenameDept('${oldName}')">Save</button>
+          <button class="btn btn-outline btn-sm" onclick="renderDeptList()">Cancel</button>
+        </div>`;
+      document.getElementById(`rename-input-${oldName}`)?.focus();
+    }
+    window.startRenameDept = startRenameDept;
+    window.renderDeptList  = renderDeptList;
+
+    async function confirmRenameDept(oldName){
+      const input = document.getElementById(`rename-input-${oldName}`);
+      const newName = (input?.value||'').trim().toUpperCase();
+      if(!newName){ toast('Name cannot be empty','error'); return; }
+      if(newName === oldName){ renderDeptList(); return; }
+      if(newName.length > 20){ toast('Name too long (max 20 chars)','error'); return; }
+      if(DEPTS.includes(newName)){ toast(`${newName} already exists`,'error'); return; }
+      if(!isOnline){ toast('Offline. Cannot rename.','error'); return; }
+      try {
+        // Upsert Firestore doc for this dept (builtin or custom)
+        const existing = CUSTOM_DEPT_DOCS.find(x=>x.name===oldName);
+        if(existing){
+          await updateDoc(doc(db,'app_departments',existing.id), {name: newName});
+          existing.name = newName;
+        } else {
+          // Built-in being renamed for the first time — create a doc to track the rename
+          const ref = await addDoc(deptCol(), { name: newName, renamedFrom: oldName, createdAt: new Date().toISOString() });
+          CUSTOM_DEPT_DOCS.push({ id: ref.id, name: newName, renamedFrom: oldName });
+          // Remove the builtin name so it doesn't duplicate
+          const bi = BUILTIN_DEPTS.indexOf(oldName);
+          if(bi>=0) BUILTIN_DEPTS[bi] = newName;
+        }
+        // Update in-memory items so counts stay accurate
+        S.items.forEach(i=>{ if(i.department===oldName) i.department=newName; });
+        // Update DEPTS array
+        const idx = DEPTS.indexOf(oldName);
+        if(idx>=0) DEPTS[idx] = newName;
+        renderDeptNav();
+        updateFilterDepts();
+        renderDeptList();
+        updateBadges();
+        toast(`Renamed "${oldName}" → "${newName}"`, 'success');
+        if(S.dept===oldName){ S.dept=newName; document.getElementById('dept-heading').innerHTML=`<em>${newName}</em> Department`; document.getElementById('dept-sub').textContent=`Annual Procurement Plan — ${newName}`; }
+      } catch(e){ toast('Error: '+e.message,'error'); }
+    }
+    window.confirmRenameDept = confirmRenameDept;
 
     async function saveDept(){
       const nameInput = document.getElementById('new-dept-name');
@@ -1151,31 +1225,11 @@ const firebaseConfig = {
         updateFilterDepts();
         renderDeptList();
         nameInput.value = '';
-        toast(`Department ${name} added!`, 'success');
+        toast(`Department "${name}" added as built-in!`, 'success');
         updateBadges();
       } catch(e){ toast('Error: '+e.message,'error'); }
     }
     window.saveDept = saveDept;
-
-    async function confirmDeleteDept(docId, name){
-      const cnt = S.items.filter(i=>i.department===name).length;
-      const msg = cnt > 0
-        ? `"${name}" has ${cnt} item(s). Removing the department will not delete its items — they will remain in the database but the department tab will be hidden. Continue?`
-        : `Remove department "${name}"?`;
-      if(!confirm(msg)) return;
-      if(!isOnline){ toast('Offline.','error'); return; }
-      try {
-        await deleteDoc(doc(db,'app_departments',docId));
-        CUSTOM_DEPT_DOCS = CUSTOM_DEPT_DOCS.filter(d=>d.id!==docId);
-        DEPTS = [...BUILTIN_DEPTS, ...CUSTOM_DEPT_DOCS.map(d=>d.name)];
-        renderDeptNav();
-        updateFilterDepts();
-        renderDeptList();
-        toast(`Department ${name} removed`,'success');
-        if(S.dept===name) switchPage('dashboard');
-      } catch(e){ toast('Error: '+e.message,'error'); }
-    }
-    window.confirmDeleteDept = confirmDeleteDept;
 
     // ── Firestore item ops ──
     async function getAll(){
@@ -1498,8 +1552,16 @@ const firebaseConfig = {
     function openEditModal(id){
       S.editId=id; closeModal('modal-item');
       const i=S.items.find(x=>x.id===id);
+      // Legacy migration: if record uses old single month+quantity format,
+      // copy quantity into the correct monthly qty field before opening form
+      const itemCopy = {...i, type: normalizeType(i.type)};
+      if(itemCopy.month && !Object.values(MONTH_KEYS).some(k=>itemCopy[k])){
+        // No per-month keys set — inject legacy qty into the matching month
+        const legacyKey = MONTH_KEYS[itemCopy.month];
+        if(legacyKey) itemCopy[legacyKey] = parseFloat(itemCopy.quantity)||0;
+      }
       document.getElementById('form-title').textContent='Edit Procurement Item';
-      document.getElementById('form-body').innerHTML=itemForm({...i, type: normalizeType(i.type)});
+      document.getElementById('form-body').innerHTML=itemForm(itemCopy);
       openModal('modal-form');
       setTimeout(updateFormTotals,0);
     }
@@ -1792,16 +1854,208 @@ const firebaseConfig = {
         </tr>
       </thead>`;
 
-      const toolbar = `<style>.print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:9px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;}@media print{.print-toolbar{display:none!important;}}<\/style>
+      // Pass items + context to print window
+      const itemsJSON = JSON.stringify(items);
+      const deptJSON  = JSON.stringify(deptLabel);
+      const isAllJSON = JSON.stringify(titleSuffix === 'All Departments');
+      const deptsJSON = JSON.stringify(DEPTS);
+
+      const toolbar = `<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
+      <style>
+        .print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:8px 18px;display:flex;align-items:center;gap:9px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+        .pt-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:6px;padding:7px 15px;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+        .pt-btn:hover{opacity:.85;} .pt-btn:disabled{opacity:.55;cursor:not-allowed;}
+        .pt-btn-print{background:#fff;color:#1a3358;}
+        .pt-btn-excel{background:#1d6f42;color:#fff;}
+        .pt-btn-close{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)!important;font-weight:500;}
+        @media print{.print-toolbar{display:none!important;}.page{padding-top:8mm!important;}}
+      <\/style>
       <div class="print-toolbar">
-        <button onclick="window.print()" style="background:#fff;color:#1a3358;border:none;padding:7px 18px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print Document
+        <button class="pt-btn pt-btn-print" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
         </button>
-        <span style="font-size:11px;opacity:.65">Ctrl+P · Legal · Landscape</span>
-        <button onclick="window.close()" style="margin-left:auto;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.25);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer">✕ Close</button>
+        <button class="pt-btn pt-btn-excel" id="excel-btn" onclick="saveAsExcel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Save as Excel (.xlsx)
+        </button>
+        <span style="font-size:11px;opacity:.5">Ctrl+P · Legal · Landscape</span>
+        <button class="pt-btn pt-btn-close" onclick="window.close()" style="margin-left:auto">✕ Close</button>
       </div>
-      <div style="height:42px"></div>`;
+      <div style="height:44px"></div>
+      <script>
+        const _ITEMS  = ${itemsJSON};
+        const _DEPT   = ${deptJSON};
+        const _IS_ALL = ${isAllJSON};
+        const _DEPTS  = ${deptsJSON};
+        const _TITLE  = document.title;
+
+        const MKEY={January:'qty_jan',February:'qty_feb',March:'qty_mar',April:'qty_apr',May:'qty_may',June:'qty_jun',July:'qty_jul',August:'qty_aug',September:'qty_sep',October:'qty_oct',November:'qty_nov',December:'qty_dec'};
+        const Q1=['January','February','March'],Q2=['April','May','June'],Q3=['July','August','September'],Q4=['October','November','December'];
+        function mQty(item,m){const k=MKEY[m];if(item[k]!=null){const v=parseFloat(item[k]||0);return v>0?v:0;}if((item.month||'').toLowerCase()===m.toLowerCase())return parseFloat(item.quantity||0)||0;return 0;}
+        function qSum(item,months){return months.reduce((s,m)=>s+mQty(item,m),0);}
+        function normType(t){if(!t)return 'Office Supplies';if(t.toLowerCase()==='cse')return 'Office Supplies';return t;}
+
+        // Columns A–Z (indices 0–25) matching xlsm "Printing Sheet":
+        // A:#  B:Item  C:Unit  D:Jan  E:Feb  F:Mar  G:Q1  H:Q1Amt
+        // I:Apr  J:May  K:Jun  L:Q2  M:Q2Amt
+        // N:Jul  O:Aug  P:Sep  Q:Q3  R:Q3Amt
+        // S:Oct  T:Nov  U:Dec  V:Q4  W:Q4Amt
+        // X:TotalQty  Y:UnitPrice  Z:TotalAmt
+        function buildSheet(wb, deptItems, deptLabel, sheetName){
+          const NC=26;
+          const E=()=>Array(NC).fill(null);
+          const merges=[];
+          const M=(r1,c1,r2,c2)=>merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});
+          const aoa=[];
+          const datePrinted=new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+
+          // Rows 1–3 blank
+          aoa.push(E()); aoa.push(E()); aoa.push(E());
+
+          // Row 4: Title
+          const r4=E(); r4[0]='ANNUAL PROCUREMENT PLAN for 2026'; aoa.push(r4); M(3,0,3,25);
+
+          // Row 5: Subtitle
+          const r5=E(); r5[0]='For Common-Use Supplies and Equipment'; aoa.push(r5); M(4,0,4,25);
+
+          // Rows 6–7 blank
+          aoa.push(E()); aoa.push(E());
+
+          // Row 8: Province / Planned Amount / Page
+          const r8=E();
+          r8[0]='Province, City or Municipality: Balayan, Batangas';
+          r8[5]='Planned Amount'; r8[23]='Page 1 of 1';
+          aoa.push(r8); M(7,0,7,4); M(7,5,7,22); M(7,23,7,25);
+
+          // Row 9: Plan Control No
+          const r9=E(); r9[0]='Plan Control No. _________________'; aoa.push(r9); M(8,0,8,25);
+
+          // Row 10: Dept / Regular / Contingency / Total / Date
+          const r10=E();
+          r10[0]='Department/Office: '+deptLabel;
+          r10[5]='Regular'; r10[10]='Contingency';
+          r10[18]='Total:';
+          // r10[19] = grand total formula — back-filled after build
+          r10[23]='Date Submitted: '+datePrinted;
+          aoa.push(r10);
+          M(9,0,9,4); M(9,5,9,9); M(9,10,9,17); M(9,20,9,22); M(9,23,9,25);
+
+          // Row 11: Header line 1
+          const r11=E();
+          r11[0]='#'; r11[1]='Item & Specifications'; r11[2]='Unit of Measure';
+          r11[3]='Quantity Requirement'; r11[24]='Unit Price'; r11[25]='TOTAL AMOUNT';
+          aoa.push(r11);
+          M(10,0,11,0); M(10,1,11,1); M(10,2,11,2); M(10,3,10,22); M(10,24,11,24); M(10,25,11,25);
+
+          // Row 12: Header line 2
+          const r12=E();
+          r12[3]='Jan'; r12[4]='Feb'; r12[5]='Mar'; r12[6]='Q1'; r12[7]='Q1 AMOUNT';
+          r12[8]='Apr'; r12[9]='May'; r12[10]='June'; r12[11]='Q2'; r12[12]='Q2 AMOUNT';
+          r12[13]='July'; r12[14]='Aug'; r12[15]='Sept'; r12[16]='Q3'; r12[17]='Q3 AMOUNT';
+          r12[18]='Oct'; r12[19]='Nov'; r12[20]='Dec'; r12[21]='Q4'; r12[22]='Q4 AMOUNT';
+          r12[23]='Total Quantity';
+          aoa.push(r12);
+
+          let CR=13; // current Excel row (1-based), starts at 13 after 12 header rows
+          const subTotalRows=[];
+          const CATS=['Office Supplies','Other Supplies','Machinery'];
+          const CAT_LABELS={'Office Supplies':'OFFICE SUPPLIES','Other Supplies':'OTHER SUPPLIES','Machinery':'MACHINERY / EQUIPMENT'};
+          let itemIdx=1;
+
+          function pushLabel(label){
+            const sr=E(); sr[0]=label; aoa.push(sr); M(CR-1,0,CR-1,25); CR++;
+          }
+          function pushDataRow(item){
+            const R=CR;
+            const up=parseFloat(item.unit_price||0);
+            const dr=E();
+            dr[0]=itemIdx++; dr[1]=item.item||''; dr[2]=item.unit_of_measure||'';
+            dr[3]=mQty(item,'January')||null; dr[4]=mQty(item,'February')||null; dr[5]=mQty(item,'March')||null;
+            dr[6]={f:'SUM(D'+R+':F'+R+')'};  dr[7]={f:'G'+R+'*Y'+R};
+            dr[8]=mQty(item,'April')||null;   dr[9]=mQty(item,'May')||null;  dr[10]=mQty(item,'June')||null;
+            dr[11]={f:'SUM(I'+R+':K'+R+')'}; dr[12]={f:'L'+R+'*Y'+R};
+            dr[13]=mQty(item,'July')||null;   dr[14]=mQty(item,'August')||null; dr[15]=mQty(item,'September')||null;
+            dr[16]={f:'SUM(N'+R+':P'+R+')'}; dr[17]={f:'Q'+R+'*Y'+R};
+            dr[18]=mQty(item,'October')||null; dr[19]=mQty(item,'November')||null; dr[20]=mQty(item,'December')||null;
+            dr[21]={f:'SUM(S'+R+':U'+R+')'}; dr[22]={f:'V'+R+'*Y'+R};
+            dr[23]={f:'G'+R+'+L'+R+'+Q'+R+'+V'+R}; // Total Qty (X)
+            dr[24]=up||null;                         // Unit Price (Y)
+            dr[25]={f:'X'+R+'*Y'+R};                // Total Amt (Z)
+            aoa.push(dr); CR++;
+          }
+          function pushSubtotal(label,startR,endR){
+            const sr=E(); sr[0]=label;
+            sr[25]={f:'SUM(Z'+startR+':Z'+endR+')'};
+            aoa.push(sr); M(CR-1,0,CR-1,24);
+            subTotalRows.push(CR); CR++;
+          }
+
+          CATS.forEach(cat=>{
+            const catItems=deptItems.filter(i=>normType(i.type)===cat);
+            if(!catItems.length) return;
+            const avail=catItems.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
+            const notAvail=catItems.filter(i=>(i.availability||'').toLowerCase().includes('not'));
+            pushLabel(CAT_LABELS[cat]);
+            if(avail.length){
+              pushLabel('AVAILABLE AT PROCUREMENT SERVICE STORES');
+              pushLabel('AVAILABLE');
+              const s=CR; avail.forEach(item=>pushDataRow(item));
+              pushSubtotal('Sub-Total (Available)',s,CR-1);
+            }
+            if(notAvail.length){
+              pushLabel('NOT AVAILABLE AT PROCUREMENT SERVICE STORES');
+              pushLabel('NOT AVAILABLE');
+              const s=CR; notAvail.forEach(item=>pushDataRow(item));
+              pushSubtotal('Sub-Total (Not Available)',s,CR-1);
+            }
+          });
+
+          // Grand Total
+          const gtRow=E(); gtRow[0]='TOTAL';
+          gtRow[25]=subTotalRows.length?{f:subTotalRows.map(r=>'Z'+r).join('+')}:0;
+          aoa.push(gtRow); M(CR-1,0,CR-1,24);
+          const gtExcelRow=CR;
+
+          // Back-fill row 10 col T (index 19) with grand total formula
+          aoa[9][19]={f:'Z'+gtExcelRow};
+
+          const ws=XLSX.utils.aoa_to_sheet(aoa);
+          ws['!merges']=merges;
+          ws['!cols']=[
+            {wch:4},{wch:42},{wch:8},
+            {wch:5},{wch:5},{wch:5},{wch:5},{wch:12},
+            {wch:5},{wch:5},{wch:5},{wch:5},{wch:12},
+            {wch:5},{wch:5},{wch:5},{wch:5},{wch:12},
+            {wch:5},{wch:5},{wch:5},{wch:5},{wch:12},
+            {wch:9},{wch:12},{wch:14}
+          ];
+          const safeName=sheetName.replace(/[\\\/\?\*\[\]:]/g,'').substring(0,31);
+          XLSX.utils.book_append_sheet(wb, ws, safeName);
+        }
+
+        function saveAsExcel(){
+          const btn=document.getElementById('excel-btn');
+          btn.innerHTML='⏳ Building…'; btn.disabled=true;
+          try{
+            const wb=XLSX.utils.book_new();
+            if(_IS_ALL){
+              // One sheet per department — matches xlsm multi-sheet structure
+              _DEPTS.forEach(dept=>{
+                const di=_ITEMS.filter(i=>i.department===dept);
+                if(di.length) buildSheet(wb, di, dept+' — Municipality of Balayan', dept);
+              });
+              // Combined ALL sheet
+              buildSheet(wb, _ITEMS, 'Municipality of Balayan — All Departments', 'ALL');
+            } else {
+              buildSheet(wb, _ITEMS, _DEPT, 'APP-CSE 2026');
+            }
+            const fname=_TITLE.replace(/[^a-zA-Z0-9 _\-]/g,'_')+'.xlsx';
+            XLSX.writeFile(wb, fname);
+          }catch(e){alert('Excel export failed: '+e.message);}
+          finally{setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save as Excel (.xlsx)';btn.disabled=false;},1500);}
+        }
+      <\/script>`;
 
       return `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <title>APP-CSE 2026 — ${titleSuffix}</title>
