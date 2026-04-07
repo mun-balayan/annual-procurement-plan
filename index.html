@@ -246,6 +246,21 @@ body::before {
 .btn-import-top:hover { background: rgba(88,166,255,.22); color: #a8d0ff; border-color: rgba(88,166,255,.45); }
 .btn-import-top:active { transform: scale(.97); }
 
+/* ════ LOGOUT BUTTON (topbar) ════ */
+.btn-logout-top {
+  background: transparent; color: rgba(255,255,255,.35);
+  border: 1px solid rgba(255,255,255,.1); border-radius: var(--r);
+  padding: 7px 12px;
+  font-family: var(--ff); font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: background var(--t2), border-color var(--t2), color var(--t2);
+  white-space: nowrap; flex-shrink: 0;
+}
+.btn-logout-top svg { width: 13px; height: 13px; }
+.btn-logout-top:hover { background: rgba(248,81,73,.12); color: #f87171; border-color: rgba(248,81,73,.3); }
+.btn-logout-top:active { transform: scale(.97); }
+
 /* ════ IMPORTER DRAWER ════ */
 #importer-overlay {
   position: fixed; inset: 0; z-index: 500;
@@ -1110,6 +1125,10 @@ tbody td:last-child { border-right: none; }
 
   <div class="tb-right">
     <div class="tb-clock" id="topbar-clock"></div>
+    <button class="btn-logout-top" onclick="doLogout()" title="Log out">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h4v14h-4M8 14l4-4-4-4M12 10H4"/></svg>
+      Log Out
+    </button>
     <button class="btn-import-top" onclick="openImporter()">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M4 16h12"/></svg>
       Import Excel
@@ -1151,7 +1170,7 @@ tbody td:last-child { border-right: none; }
 
     <div class="sidebar-footer">
       <div class="sidebar-footer-info">
-        <div class="sidebar-footer-label">APP-CSE v26</div>
+        <div class="sidebar-footer-label">APP-CSE v27</div>
         <div class="sidebar-footer-sub">Municipality of Balayan</div>
       </div>
       <div class="sidebar-footer-dot" title="Online"></div>
@@ -2088,13 +2107,18 @@ const firebaseConfig = {
       try{
         if(S.editId){
           await updateRec(S.editId,data);
-          const idx=S.items.findIndex(x=>x.id===S.editId); if(idx>=0) S.items[idx]={...S.items[idx],...data};
+          // ⚠ Do NOT mutate S.items here — onSnapshot will update it from Firestore,
+          // and a manual push/splice would cause a double-render with the live listener.
           toast('Updated successfully!','success');
         } else {
-          const ref=await addRec(data); S.items.push({id:ref.id,...data});
+          await addRec(data);
+          // ⚠ Do NOT push to S.items here — onSnapshot fires the moment addDoc lands in
+          // Firestore and replaces S.items with fresh data. A manual push here would race
+          // with that update and create a duplicate entry in the rendered list.
           toast('Added successfully!','success');
         }
-        closeModal('modal-form'); updateBadges(); window.refreshCurrent();
+        closeModal('modal-form');
+        // onSnapshot handles the UI refresh; no need to call refreshCurrent() manually.
       }catch(e){
         toast('Error: '+e.message,'error');
         // Re-enable button on error so user can retry
@@ -2109,8 +2133,9 @@ const firebaseConfig = {
       if(!isOnline){ toast('Offline.','error'); return; }
       if(!confirm('Delete this item? This cannot be undone.')) return;
       try{
-        await deleteRec(id); S.items=S.items.filter(x=>x.id!==id);
-        toast('Deleted!','success'); closeModal('modal-item'); updateBadges(); window.refreshCurrent();
+        await deleteRec(id);
+        // ⚠ Do NOT filter S.items here — onSnapshot will remove it automatically.
+        toast('Deleted!','success'); closeModal('modal-item');
       }catch(e){ toast('Error: '+e.message,'error'); }
     }
     window.confirmDelete=confirmDelete;
@@ -2782,6 +2807,14 @@ const firebaseConfig = {
 
     // ── Login gate ──
     const ACCOUNTS = { admin: 'admin' };
+    const SESSION_KEY = 'app-cse-auth';
+
+    function enterApp(){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('shell').style.display='';
+      init();
+    }
+
     window.doLogin = function(){
       const u = (document.getElementById('login-user').value||'').trim();
       const p = (document.getElementById('login-pass').value||'').trim();
@@ -2790,19 +2823,44 @@ const firebaseConfig = {
       if(ACCOUNTS[u] && ACCOUNTS[u]===p){
         err.style.display='none';
         btn.textContent='Logging in…'; btn.disabled=true;
-        document.getElementById('login-screen').style.display='none';
-        document.getElementById('shell').style.display='';
-        init();
+        sessionStorage.setItem(SESSION_KEY, u); // persist for reloads; cleared on tab close
+        enterApp();
       } else {
         err.style.display='block';
         document.getElementById('login-pass').value='';
         document.getElementById('login-pass').focus();
       }
     };
+
+    window.doLogout = function(){
+      if(!confirm('Log out?')) return;
+      sessionStorage.removeItem(SESSION_KEY);
+      // Detach real-time listener before tearing down the shell
+      if(_unsubItems){ _unsubItems(); _unsubItems=null; }
+      document.getElementById('shell').style.display='none';
+      document.getElementById('login-screen').style.display='';
+      // Reset login form
+      const uEl=document.getElementById('login-user');
+      const pEl=document.getElementById('login-pass');
+      const btn=document.getElementById('login-btn');
+      const err=document.getElementById('login-err');
+      if(uEl) uEl.value='';
+      if(pEl) pEl.value='';
+      if(btn){ btn.disabled=false; btn.textContent='Log In'; }
+      if(err) err.style.display='none';
+    };
+
     // Allow Enter key on both fields
     ['login-user','login-pass'].forEach(id=>{
       document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
     });
+
+    // ── Auto-restore session on page reload ──
+    // sessionStorage survives F5/Ctrl+R but is cleared when the tab is closed.
+    const savedUser = sessionStorage.getItem(SESSION_KEY);
+    if(savedUser && ACCOUNTS[savedUser]){
+      enterApp(); // skip login screen
+    }
 
     // ── Bootstrap ──
     async function init(){
