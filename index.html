@@ -1741,18 +1741,17 @@ const firebaseConfig = {
     window.toggleMobileMenu=toggleMobileMenu;
 
     // ── Dashboard ──
-    async function loadDashboard(){
+    // renderDashboard() works purely off S.items — no Firestore fetch.
+    // Call this from onSnapshot so the dashboard updates instantly without a spinner.
+    function renderDashboard(){
       const el=document.getElementById('dash-inner');
-      el.innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div>';
-      try { S.items=await getAll(); } catch(e){ return; }
-      updateBadges();
+      if(!el) return;
 
       const total=S.items.length;
       const totalAmt=S.items.reduce((s,i)=>s+parseFloat(i.total_amount||0),0);
       const avail=S.items.filter(i=>!(i.availability||'').toLowerCase().includes('not')).length;
       const notAvail=S.items.filter(i=>(i.availability||'').toLowerCase().includes('not')).length;
 
-      // By department (count + amount)
       const byDeptAmt={};
       S.items.forEach(i=>{
         const d=i.department||'N/A';
@@ -1763,7 +1762,6 @@ const firebaseConfig = {
       const dArr=Object.entries(byDeptAmt).sort((a,b)=>b[1].amt-a[1].amt);
       const maxDAmt=Math.max(...dArr.map(x=>x[1].amt),1);
 
-      // By type — ₱ total amounts
       const byTypeAmt={'Office Supplies':0,'Other Supplies':0,'Machinery':0};
       S.items.forEach(i=>{
         const t=normalizeType(i.type);
@@ -1776,7 +1774,6 @@ const firebaseConfig = {
       ];
       const maxTAmt=Math.max(...tArr.map(x=>x[1]),1);
 
-      // Monthly distribution
       const byMonth={};
       S.items.forEach(i=>{ const m=i.month||'N/A'; byMonth[m]=(byMonth[m]||0)+1; });
       const mArr=MONTHS.filter(m=>byMonth[m]).map(m=>[m,byMonth[m]]);
@@ -1829,6 +1826,15 @@ const firebaseConfig = {
         </div>`;
     }
 
+    // loadDashboard() = initial page load: show spinner, fetch data, then render.
+    async function loadDashboard(){
+      const el=document.getElementById('dash-inner');
+      el.innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading procurement data…</div>';
+      try { S.items=await getAll(); } catch(e){ return; }
+      updateBadges();
+      renderDashboard();
+    }
+
     function updateBadges(){
       document.getElementById('badge-all').textContent=S.items.length;
       DEPTS.forEach(d=>{
@@ -1840,7 +1846,8 @@ const firebaseConfig = {
     // ── Items page ──
     async function loadItems(){
       document.getElementById('items-table').innerHTML='<div class="loading"><div class="loading-spinner"></div><br>Loading…</div>';
-      try { S.items=await getAll(); } catch(e){ return; }
+      // Only fetch if S.items is empty (first load). onSnapshot keeps it current after that.
+      if(!S.items.length){ try { S.items=await getAll(); } catch(e){ return; } }
       updateBadges(); filterItems();
     }
     function filteredItems(){
@@ -2792,14 +2799,22 @@ const firebaseConfig = {
     window.printAll=printAll;
 
     // ── Real-time listener for items ──
+    // onSnapshot is the single source of truth for S.items after init.
+    // It updates S.items then re-renders whichever page is currently visible —
+    // WITHOUT a spinner or any extra Firestore fetch.
     let _unsubItems = null;
     function startRealtime(){
       if(_unsubItems) _unsubItems(); // detach any existing listener
       _unsubItems = onSnapshot(col(), snap => {
         S.items = snap.docs.map(d=>({id:d.id,...d.data(), type: normalizeType(d.data().type)}));
         updateBadges();
-        if(document.getElementById('items-table') && S.page==='items') filterItems();
-        if(S.page==='dashboard') loadDashboard();
+        if(S.page==='dashboard'){
+          renderDashboard(); // re-render charts/stats in-place, no spinner
+        } else if(S.page==='items'){
+          filterItems();     // re-apply current filters over fresh data
+        } else if(S.page==='dept' && S.dept){
+          filterDeptPage();  // re-render dept table — this was completely missing before
+        }
       }, err => {
         console.warn('Real-time listener error:', err.message);
       });
