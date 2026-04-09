@@ -7,12 +7,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Annual Procurement Planning">
-<meta name="description" content="Annual Procurement Planning System">
+<meta name="description" content="Annual Procurement Plan — Municipality of Balayan">
 <meta name="theme-color" content="#111827">
 <link rel="icon" type="image/png" href="./logo.png">
 <link rel="apple-touch-icon" href="./logo.png">
 <link rel="shortcut icon" href="./logo.png">
-<title>Annual Procurement Planning System</title>
+<title>Annual Procurement Planning — Municipality of Balayan</title>
 <script>
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
@@ -820,6 +820,30 @@ tbody td:last-child { border-right: none; }
 .detail-label { font-size: 12px; color: var(--ink3); flex-shrink: 0; font-weight: 400; }
 .detail-value { font-size: 13px; text-align: right; color: var(--ink); word-break: break-all; font-weight: 600; }
 
+/* ════ DEPT CHECKBOX PICKER ════ */
+.dept-picker { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
+.dept-picker-item { position: relative; }
+.dept-picker-item input[type="checkbox"],
+.dept-picker-item input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.dept-picker-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: 20px;
+  border: 1.5px solid var(--bd);
+  background: var(--surface2); color: var(--ink3);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; user-select: none;
+  transition: all var(--t2); white-space: nowrap;
+}
+.dept-picker-label svg { width: 11px; height: 11px; opacity: 0; transition: opacity var(--t1); flex-shrink: 0; }
+.dept-picker-item input:checked + .dept-picker-label {
+  background: var(--blue); border-color: var(--blue); color: #fff;
+  box-shadow: 0 2px 10px rgba(29,63,138,.28);
+}
+.dept-picker-item input:checked + .dept-picker-label svg { opacity: 1; }
+.dept-picker-label:hover { border-color: var(--blue3); color: var(--blue2); background: var(--blue-lt); }
+.dept-picker-item input:checked + .dept-picker-label:hover { background: var(--blue2); }
+.dept-picker-hint { font-size: 10px; color: var(--ink4); margin-top: 5px; font-style: italic; }
+
 /* ════ FORM ════ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-full  { grid-column: 1 / -1; }
@@ -901,6 +925,31 @@ tbody td:last-child { border-right: none; }
 .dept-rename-btn:hover { border-color: var(--blue3); color: var(--blue2); background: var(--blue-lt); }
 .dept-rename-form { display: flex; align-items: center; gap: 8px; width: 100%; }
 .dept-rename-input { flex: 1; }
+
+/* Toggle button */
+.btn-item-list-top { display: none; }
+
+/* ════ CATALOG PAGE ════ */
+.cat-acct { font-family: var(--fm); font-size: 11px; color: var(--blue2); font-weight: 600; }
+.cat-class-badge {
+  display: inline-flex; padding: 2px 9px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; white-space: nowrap;
+  background: var(--purple-lt); color: var(--purple); border: 1px solid var(--purple-bd);
+}
+.cat-add-btn {
+  background: var(--blue-lt); color: var(--blue2);
+  border: 1.5px solid var(--blue-bd); border-radius: var(--r);
+  width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--t2); flex-shrink: 0;
+}
+.cat-add-btn svg { width: 13px; height: 13px; }
+.cat-add-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.cat-detail-acct {
+  font-family: var(--fm); font-size: 11px; font-weight: 700;
+  color: var(--blue2); background: var(--blue-lt);
+  border: 1px solid var(--blue-bd); border-radius: var(--r);
+  padding: 6px 12px; display: inline-block; margin-bottom: 14px;
+}
 
 /* ════ LOADING / EMPTY ════ */
 .loading {
@@ -1060,7 +1109,7 @@ tbody td:last-child { border-right: none; }
 .login-card{position:relative;background:#fff;border-radius:18px;padding:40px 36px 32px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;gap:0;}
 .login-logo{width:64px;height:64px;margin-bottom:14px;}
 .login-logo img{width:100%;height:100%;object-fit:contain;}
-.login-title{font-size:20px;font-weight:800;color:#1B3A6B;text-align:center;letter-spacing:.4px;margin-bottom:3px;}
+.login-title{font-size:20px;font-weight:800;color:#1B3A6B;letter-spacing:.4px;margin-bottom:3px;}
 .login-sub{font-size:10.5px;color:#64748B;text-align:center;margin-bottom:24px;line-height:1.5;}
 .login-form{width:100%;display:flex;flex-direction:column;gap:14px;}
 .login-field{display:flex;flex-direction:column;gap:5px;}
@@ -1083,7 +1132,7 @@ tbody td:last-child { border-right: none; }
     <div class="login-logo">
       <img src="./logo.png" alt="Logo" onerror="this.style.display='none'">
     </div>
-    <div class="login-title">Annual Procurement Planning System</div>
+    <div class="login-title">APP-CSE 2026</div>
     <div class="login-sub">Municipality of Balayan — General Services Office</div>
     <div class="login-form">
       <div class="login-field">
@@ -1157,6 +1206,11 @@ tbody td:last-child { border-right: none; }
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
         <span class="snav-label">All Items</span>
         <span class="snav-badge" id="badge-all">—</span>
+      </button>
+      <button class="snav-btn" id="tab-catalog" onclick="switchPage('catalog')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h14M3 9h10M3 13h7"/><rect x="13" y="10" width="5" height="8" rx="1"/></svg>
+        <span class="snav-label">Item Catalog</span>
+        <span class="snav-badge" id="badge-catalog">—</span>
       </button>
 
       <div class="sidebar-sep"></div>
@@ -1290,6 +1344,41 @@ tbody td:last-child { border-right: none; }
         <div class="mobile-cards" id="dept-cards"></div>
       </div>
 
+      <!-- ITEM CATALOG -->
+      <div class="page" id="page-catalog">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Item <em>Catalog</em></div>
+            <div class="page-sub">
+              DBIMS Reference Items — Common Use Supplies &amp; Equipment
+              <span class="count-chip" id="catalog-count"></span>
+            </div>
+          </div>
+          <div class="hdr-actions">
+            <button class="btn btn-outline btn-sm" onclick="openAddCatalogModal()">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
+              Add Item
+            </button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg class="search-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M17 17l-3.5-3.5"/></svg>
+            <input class="search-input" id="catalog-search" placeholder="Search items, descriptions, account codes…" oninput="filterCatalog()">
+          </div>
+          <select class="filter-sel" id="catalog-class-filter" onchange="filterCatalog()">
+            <option value="">All Classifications</option>
+          </select>
+          <select class="filter-sel" id="catalog-avail-filter" onchange="filterCatalog()">
+            <option value="">All Availability</option>
+            <option value="available">✓ Available</option>
+            <option value="not">✗ Not Available</option>
+          </select>
+        </div>
+        <div id="catalog-table"></div>
+        <div class="mobile-cards" id="catalog-cards"></div>
+      </div>
+
     </div><!-- /#content -->
 
     <!-- BOTTOM NAV -->
@@ -1321,7 +1410,7 @@ tbody td:last-child { border-right: none; }
       <div class="imp-hdr-icon">📋</div>
       <div class="imp-hdr-text">
         <div class="imp-hdr-title">Excel Importer — APP-CSE</div>
-        <div class="imp-hdr-sub">Import procurement records from .xlsm / .xlsx · All departments auto-detected</div>
+        <div class="imp-hdr-sub">Import procurement records from .xlsm / .xlsx · Supports dept sheets &amp; DBIMS Items sheet</div>
       </div>
       <button class="imp-close-btn" onclick="closeImporter()" aria-label="Close importer">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
@@ -1354,6 +1443,13 @@ tbody td:last-child { border-right: none; }
             <div class="imp-mode-title">➕ Append Only</div>
             <div class="imp-mode-desc">Keeps existing records and adds new ones from the Excel file on top.</div>
           </div>
+          <div class="imp-mode-card" id="imp-mc-items" onclick="impSetMode('items')" style="display:none">
+            <div class="imp-mode-title">📋 Items Sheet Import</div>
+            <div class="imp-mode-desc">Import DBIMS Items catalog. Items are saved as a general reference list — add them to departments from the Item List panel.</div>
+          </div>
+        </div>
+        <div class="imp-items-note" id="imp-items-note" style="display:none">
+          ℹ️ Items from the <strong>Items</strong> sheet will be saved to the general catalog. Use the <strong>Item List</strong> panel to add individual items to any department's procurement records.
         </div>
       </div>
 
@@ -1446,6 +1542,30 @@ tbody td:last-child { border-right: none; }
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-catalog-detail" onclick="closeOverlay(event,'modal-catalog-detail')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title" id="cat-detail-title">Item Detail</div>
+      <button class="modal-close" onclick="closeModal('modal-catalog-detail')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="cat-detail-body"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-catalog-form" onclick="closeOverlay(event,'modal-catalog-form')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title" id="cat-form-title">Add Catalog Item</div>
+      <button class="modal-close" onclick="closeModal('modal-catalog-form')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="cat-form-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <button class="fab" id="fab-btn" onclick="openAddModal()" aria-label="Add item">
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
@@ -1516,8 +1636,9 @@ const firebaseConfig = {
       itemSearch:'', itemDept:'', itemType:'', itemMonth:'', itemAvail:'',
       deptSearch:'', deptType:'', deptMonth:'', deptAvail:'' };
 
-    const col     = () => collection(db,'procurement_items');
-    const deptCol = () => collection(db,'app_departments');
+    const col      = () => collection(db,'procurement_items');
+    const deptCol  = () => collection(db,'app_departments');
+    const catCol   = () => collection(db,'items_catalog');
 
     // ── Load Departments from Firestore ──
     async function loadDepts(){
@@ -1680,7 +1801,271 @@ const firebaseConfig = {
       renderDeptNav(); updateFilterDepts(); updateBadges();
     };
 
-    // ── Firestore item ops ──
+    // ── Item Catalog (Items sheet data) ──
+    let ITEM_CATALOG = []; // [{acct_code, acct_title, classification, description, type, unit_of_measure, availability, price}]
+
+    async function loadItemCatalog(){
+      try {
+        const snap = await getDocs(catCol());
+        ITEM_CATALOG = snap.docs.map(d=>({id:d.id,...d.data()}));
+        window._ITEM_CATALOG = ITEM_CATALOG;
+        updateIlpClassFilter();
+        if(S.page==='catalog') filterCatalog();
+        document.getElementById('badge-catalog').textContent = ITEM_CATALOG.length || '—';
+      } catch(e){ /* silent fail */ }
+    }
+
+    function updateIlpClassFilter(){
+      const sel = document.getElementById('catalog-class-filter');
+      if(!sel) return;
+      const classes = [...new Set(ITEM_CATALOG.map(i=>i.classification).filter(Boolean))].sort();
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">All Classifications</option>' +
+        classes.map(c=>`<option value="${c}"${cur===c?' selected':''}>${c}</option>`).join('');
+      document.getElementById('badge-catalog').textContent = ITEM_CATALOG.length || '—';
+    }
+
+    // ── Catalog Page ──
+    function loadCatalogPage(){
+      if(!ITEM_CATALOG.length && S.page==='catalog'){
+        document.getElementById('catalog-table').innerHTML =
+          `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M3 5h14M3 9h10M3 13h7"/><rect x="13" y="10" width="5" height="8" rx="1"/></svg></div><div class="empty-text">No catalog data yet. Import the DBIMS Items sheet via the Excel importer.</div></div>`;
+        return;
+      }
+      filterCatalog();
+    }
+
+    window.filterCatalog = function(){
+      const q = (document.getElementById('catalog-search')?.value||'').toLowerCase();
+      const cls = document.getElementById('catalog-class-filter')?.value||'';
+      const avail = document.getElementById('catalog-avail-filter')?.value||'';
+      let list = ITEM_CATALOG;
+      if(q) list = list.filter(i=>[i.description,i.acct_code,i.acct_title,i.classification,i.unit_of_measure].join(' ').toLowerCase().includes(q));
+      if(cls) list = list.filter(i=>i.classification===cls);
+      if(avail==='not') list = list.filter(i=>(i.availability||'').toLowerCase().includes('not'));
+      else if(avail==='available') list = list.filter(i=>!(i.availability||'').toLowerCase().includes('not'));
+
+      const countEl = document.getElementById('catalog-count');
+      if(countEl) countEl.textContent = `${list.length} item${list.length!==1?'s':''}`;
+
+      const tableEl = document.getElementById('catalog-table');
+      if(!list.length){
+        tableEl.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M3 5h14M3 9h10M3 13h7"/><rect x="13" y="10" width="5" height="8" rx="1"/></svg></div><div class="empty-text">No items match your search.</div></div>`;
+        document.getElementById('catalog-cards').innerHTML = '';
+        return;
+      }
+
+      tableEl.innerHTML = `<div class="table-wrap"><table><thead><tr>
+        <th>Acct. Code</th><th>Description</th><th class="hide-mobile">Acct. Title</th>
+        <th class="hide-mobile">Classification</th><th class="hide-mobile">Unit</th>
+        <th>Price</th><th>Status</th><th></th>
+      </tr></thead><tbody>
+        ${list.map(item=>{
+          const isAvail = !(item.availability||'').toLowerCase().includes('not');
+          const price = parseFloat(item.price||0);
+          const sid = (item.id||'').replace(/'/g,"\\'");
+          return `<tr onclick="showCatalogDetail('${sid}')">
+            <td class="cat-acct">${item.acct_code||'—'}</td>
+            <td class="td-item">${item.description||'—'}</td>
+            <td class="hide-mobile td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.acct_title||'—'}</td>
+            <td class="hide-mobile"><span class="cat-class-badge">${item.classification||'—'}</span></td>
+            <td class="hide-mobile td-muted">${item.unit_of_measure||'—'}</td>
+            <td class="td-mono">₱${price.toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
+            <td>${isAvail?'<span class="badge badge-green">Available</span>':'<span class="badge badge-red">Not Available</span>'}</td>
+            <td onclick="event.stopPropagation()">
+              <button class="cat-add-btn" onclick="ilpPickItem('${sid}')" title="Add to procurement">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>`;
+
+      document.getElementById('catalog-cards').innerHTML = list.map((item,idx)=>{
+        const isAvail = !(item.availability||'').toLowerCase().includes('not');
+        const price = parseFloat(item.price||0);
+        const sid = (item.id||'').replace(/'/g,"\\'");
+        return `<div class="m-card" style="animation-delay:${Math.min(idx,10)*.02}s" onclick="showCatalogDetail('${sid}')">
+          <div class="m-card-title">${item.description||'—'}</div>
+          <div class="m-card-row" style="margin-top:4px">
+            <span class="cat-acct">${item.acct_code||''}</span>
+            <span class="cat-class-badge">${item.classification||''}</span>
+            ${isAvail?'<span class="badge badge-green">Available</span>':'<span class="badge badge-red">Not Available</span>'}
+          </div>
+          <div class="m-card-row" style="margin-top:6px">
+            <span class="td-muted">${item.unit_of_measure||'—'}</span>
+            <span class="td-amount">₱${price.toLocaleString('en-PH',{minimumFractionDigits:2})}</span>
+          </div>
+        </div>`;
+      }).join('');
+    };
+
+    // ── Catalog detail modal ──
+    window.showCatalogDetail = function(id){
+      const item = ITEM_CATALOG.find(i=>i.id===id); if(!item) return;
+      const isAvail = !(item.availability||'').toLowerCase().includes('not');
+      const price = parseFloat(item.price||0);
+      document.getElementById('cat-detail-title').textContent = item.description||'Item';
+      document.getElementById('cat-detail-body').innerHTML = `
+        <div class="cat-detail-acct">Acct. Code: ${item.acct_code||'—'}</div>
+        <div class="detail-section">
+          <div class="detail-section-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h14M3 9h10M3 13h7"/><rect x="13" y="10" width="5" height="8" rx="1"/></svg>Catalog Details</div>
+          ${dr('Description', item.description)}
+          ${dr('Acct. Code', item.acct_code)}
+          ${dr('Acct. Title', item.acct_title)}
+          ${dr('Classification', item.classification)}
+          ${dr('Type', item.type||'—')}
+          ${dr('Unit of Measure', item.unit_of_measure)}
+          ${dr('Availability', item.availability)}
+          ${dr('Unit Price', '₱'+price.toLocaleString('en-PH',{minimumFractionDigits:2}))}
+        </div>
+        <div class="form-actions" style="padding-top:12px;border-top:1px solid var(--bd2);margin-top:4px;gap:8px">
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteCatalogItem('${id}')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h12M8 6V4h4v2M5 6l1 11h8l1-11"/></svg>Delete
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="openEditCatalogModal('${id}')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 3.5a2.12 2.12 0 013 3L7 16H4v-3L13.5 3.5z"/></svg>Edit
+          </button>
+          <button class="btn btn-gold btn-sm" style="margin-left:auto" onclick="ilpPickItem('${id}');closeModal('modal-catalog-detail')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Add to Procurement
+          </button>
+        </div>`;
+      openModal('modal-catalog-detail');
+    };
+
+    // ── Catalog item form ──
+    function catalogItemForm(item={}){
+      const fi2=(name,label,val='')=>`<div class="form-group"><label class="form-label">${label}</label><input class="form-input" type="text" name="${name}" value="${ea(String(val))}"></div>`;
+      return `<div class="form-grid" id="cat-ifrm">
+        <div class="form-group form-full"><label class="form-label">Description</label><input class="form-input" type="text" name="description" value="${ea(item.description||'')}"></div>
+        ${fi2('acct_code','Acct. Code',item.acct_code||'')}
+        ${fi2('acct_title','Acct. Title',item.acct_title||'')}
+        ${fi2('classification','Classification',item.classification||'')}
+        ${fi2('type','Type',item.type||'')}
+        ${fi2('unit_of_measure','Unit of Measure',item.unit_of_measure||'')}
+        <div class="form-group"><label class="form-label">Unit Price (₱)</label><input class="form-input" type="number" name="price" value="${ea(String(item.price||''))}" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Availability</label>
+          <select class="form-select" name="availability">
+            <option ${!(item.availability||'').toLowerCase().includes('not')?'selected':''}>Available</option>
+            <option ${(item.availability||'').toLowerCase().includes('not')?'selected':''}>Not Available</option>
+          </select>
+        </div>
+        <div class="form-actions form-full">
+          <button class="btn btn-outline" onclick="closeModal('modal-catalog-form')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveCatalogItem()">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 17V7l3-4h9v14H4z"/><rect x="7" y="13" width="6" height="4"/><rect x="7" y="3" width="6" height="4"/></svg>
+            Save
+          </button>
+        </div>
+      </div>`;
+    }
+
+    let _catEditId = null;
+    window.openAddCatalogModal = function(){
+      _catEditId = null;
+      document.getElementById('cat-form-title').textContent = 'Add Catalog Item';
+      document.getElementById('cat-form-body').innerHTML = catalogItemForm();
+      openModal('modal-catalog-form');
+    };
+    window.openEditCatalogModal = function(id){
+      _catEditId = id;
+      const item = ITEM_CATALOG.find(i=>i.id===id); if(!item) return;
+      closeModal('modal-catalog-detail');
+      document.getElementById('cat-form-title').textContent = 'Edit Catalog Item';
+      document.getElementById('cat-form-body').innerHTML = catalogItemForm(item);
+      openModal('modal-catalog-form');
+    };
+
+    window.saveCatalogItem = async function(){
+      const data={};
+      document.querySelectorAll('#cat-ifrm [name]').forEach(el=>data[el.name]=el.value);
+      if(!data.description?.trim()){ toast('Description is required','error'); return; }
+      data.price = parseFloat(data.price)||0;
+      const saveBtn = document.querySelector('#cat-ifrm .btn-primary');
+      if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='Saving…'; }
+      try{
+        if(_catEditId){
+          // Update in Firestore
+          await updateDoc(doc(db,'items_catalog',_catEditId), data);
+          // Update in-memory
+          const idx = ITEM_CATALOG.findIndex(i=>i.id===_catEditId);
+          if(idx>=0) ITEM_CATALOG[idx] = {...ITEM_CATALOG[idx], ...data};
+          toast('Catalog item updated!','success');
+        } else {
+          // Add new
+          const ref = await addDoc(catCol(), data);
+          ITEM_CATALOG.push({id: ref.id, ...data});
+          toast('Catalog item added!','success');
+        }
+        window._ITEM_CATALOG = ITEM_CATALOG;
+        updateIlpClassFilter();
+        closeModal('modal-catalog-form');
+        if(S.page==='catalog') filterCatalog();
+        document.getElementById('badge-catalog').textContent = ITEM_CATALOG.length;
+      } catch(e){
+        toast('Error: '+e.message,'error');
+        if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Save'; }
+      }
+    };
+
+    window.confirmDeleteCatalogItem = async function(id){
+      if(!confirm('Delete this catalog item? This cannot be undone.')) return;
+      try{
+        await deleteDoc(doc(db,'items_catalog',id));
+        ITEM_CATALOG = ITEM_CATALOG.filter(i=>i.id!==id);
+        window._ITEM_CATALOG = ITEM_CATALOG;
+        updateIlpClassFilter();
+        closeModal('modal-catalog-detail');
+        if(S.page==='catalog') filterCatalog();
+        document.getElementById('badge-catalog').textContent = ITEM_CATALOG.length||'—';
+        toast('Deleted from catalog','success');
+      } catch(e){ toast('Error: '+e.message,'error'); }
+    };
+
+    // Keep ilpPickItem working from catalog page
+    window.renderItemList = function(){ if(S.page==='catalog') filterCatalog(); };
+
+    window.ilpPickItem = function(id){
+      const item = ITEM_CATALOG.find(i=>i.id===id); if(!item) return;
+      const modalOpen = document.getElementById('modal-form')?.classList.contains('open');
+      const fill = () => {
+        const ni=document.querySelector('#ifrm [name="item"]');
+        const pi=document.querySelector('#ifrm [name="unit_price"]');
+        const ui=document.querySelector('#ifrm [name="unit_of_measure"]');
+        const ai=document.querySelector('#ifrm [name="availability"]');
+        if(ni) ni.value=item.description||'';
+        if(pi){ pi.value=item.price||''; updateFormTotals(); }
+        if(ui) ui.value=item.unit_of_measure||'';
+        if(ai){
+          const isAvail=!(item.availability||'').toLowerCase().includes('not');
+          ai.value=isAvail?'Available':'Not Available';
+        }
+      };
+      if(modalOpen){
+        fill();
+        toast('Item details filled in!','success');
+      } else {
+        openAddModal();
+        setTimeout(()=>{ fill(); }, 80);
+      }
+    };
+
+    // Expose catalog writer for importer
+    window._saveCatalog = async function(rows){
+      const snap = await getDocs(catCol());
+      for(let i=0;i<snap.docs.length;i+=499){
+        const batch = writeBatch(db);
+        snap.docs.slice(i,i+499).forEach(d=>batch.delete(d.ref));
+        await batch.commit();
+      }
+      for(let i=0;i<rows.length;i+=499){
+        const batch = writeBatch(db);
+        rows.slice(i,i+499).forEach(row=>batch.set(doc(catCol()),row));
+        await batch.commit();
+      }
+      // Reload fresh from Firestore to get real IDs
+      await loadItemCatalog();
+    };
     async function getAll(){
       try {
         const s = await Promise.race([
@@ -1710,7 +2095,7 @@ const firebaseConfig = {
     setInterval(updateTime,1000); updateTime();
 
     // ── Navigation ──
-    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); document.getElementById('sidebar').classList.remove('mobile-open'); const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show'); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); }
+    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); document.getElementById('sidebar').classList.remove('mobile-open'); const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show'); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); else if(pg==='catalog') loadCatalogPage(); }
     window.switchPage=switchPage;
 
     function switchDept(dept){
@@ -2042,8 +2427,27 @@ const firebaseConfig = {
     }
 
     function itemForm(i={}){
+      const isEdit = !!S.editId;
       const defaultDept = i.department || (S.dept && DEPTS.includes(S.dept) ? S.dept : '');
-      const iWithDept = {...i, department: defaultDept};
+      const inputType = isEdit ? 'radio' : 'checkbox';
+
+      // Dept picker — radio for edit (single), checkbox for add (multi)
+      const deptPicker = `<div class="form-group form-full">
+        <label class="form-label">${isEdit ? 'Department' : 'Department(s)'}</label>
+        <div class="dept-picker" id="dept-picker">
+          ${DEPTS.map(d=>{
+            const checked = isEdit ? (defaultDept===d ? 'checked' : '') : (defaultDept===d ? 'checked' : '');
+            return `<div class="dept-picker-item">
+              <input type="${inputType}" name="department" id="dp-${d}" value="${d}" ${checked}>
+              <label class="dept-picker-label" for="dp-${d}">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+                ${d}
+              </label>
+            </div>`;
+          }).join('')}
+        </div>
+        ${!isEdit ? '<div class="dept-picker-hint">Check all departments that need this item — one record will be created per department.</div>' : ''}
+      </div>`;
       const quarterCols = QUARTERS.map(q=>{
         const monthInputs = q.months.map(m=>{
           const key = MONTH_KEYS[m];
@@ -2058,7 +2462,8 @@ const firebaseConfig = {
 
       return `<div class="form-grid" id="ifrm">
         <div class="form-group form-full"><label class="form-label">Item Name</label><input class="form-input" type="text" name="item" value="${ea(i.item||'')}"></div>
-        ${fs('department','Department',DEPTS,iWithDept)}${fs('type','Supply Category',TYPES,i)}
+        ${deptPicker}
+        ${fs('type','Supply Category',TYPES,i)}
         ${fi('unit_of_measure','Unit of Measure',i)}<div class="form-group"><label class="form-label">Unit Price (₱)</label><input class="form-input" type="number" name="unit_price" value="${ea(String(i.unit_price||''))}" min="0" step="0.01" oninput="updateFormTotals()"></div>
         ${fs('availability','Availability',['Available','Not Available'],i)}
         <div class="form-group form-full">
@@ -2092,46 +2497,55 @@ const firebaseConfig = {
     }
     window.updateFormTotals = updateFormTotals;
 
-    let _savingItem = false; // re-entrancy guard — prevents double-click duplicates
+    let _savingItem = false;
     async function saveItem(){
-      if(_savingItem) return; // already in-flight, ignore extra clicks
+      if(_savingItem) return;
       if(!isOnline){ toast('Offline. Cannot save.','error'); return; }
-      // Disable the save button immediately to block rapid double-clicks
       const saveBtn = document.querySelector('#ifrm .btn-primary');
       if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='Saving…'; }
       _savingItem = true;
+
+      // Collect form fields (skip department — handled separately)
       const data={};
-      document.querySelectorAll('#ifrm [name]').forEach(el=>data[el.name]=el.value);
-      // Compute total quantity from all monthly qty fields
-      const up=parseFloat(data.unit_price||0);
+      document.querySelectorAll('#ifrm [name]').forEach(el=>{
+        if(el.name !== 'department') data[el.name]=el.value;
+      });
+
+      // Collect checked departments
+      const checkedDepts = [...document.querySelectorAll('#ifrm [name="department"]:checked')].map(el=>el.value);
+      if(!checkedDepts.length){
+        toast('Please select at least one department.','error');
+        if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Save Item'; }
+        _savingItem=false; return;
+      }
+
+      // Compute totals
+      const up = parseFloat(data.unit_price||0);
       const totalQty = Object.values(MONTH_KEYS).reduce((s,k)=>s+(parseFloat(data[k])||0),0);
-      data.quantity = totalQty;
+      data.quantity     = totalQty;
       data.total_amount = (up * totalQty).toFixed(2);
-      data.type = normalizeType(data.type);
-      // Convert month qty fields to numbers (or null if 0)
+      data.type         = normalizeType(data.type);
       Object.values(MONTH_KEYS).forEach(k=>{ data[k]=parseFloat(data[k])||null; });
       Object.keys(data).forEach(k=>{ if(data[k]===''||data[k]==='0') data[k]=null; });
+
       try{
         if(S.editId){
-          await updateRec(S.editId,data);
-          // ⚠ Do NOT mutate S.items here — onSnapshot will update it from Firestore,
-          // and a manual push/splice would cause a double-render with the live listener.
+          // Edit: single record, use first (only) checked dept
+          await updateRec(S.editId, {...data, department: checkedDepts[0]});
           toast('Updated successfully!','success');
         } else {
-          await addRec(data);
-          // ⚠ Do NOT push to S.items here — onSnapshot fires the moment addDoc lands in
-          // Firestore and replaces S.items with fresh data. A manual push here would race
-          // with that update and create a duplicate entry in the rendered list.
-          toast('Added successfully!','success');
+          // Add: one record per checked department
+          await Promise.all(checkedDepts.map(dept => addRec({...data, department: dept})));
+          toast(checkedDepts.length > 1
+            ? `Added to ${checkedDepts.length} departments!`
+            : 'Added successfully!', 'success');
         }
         closeModal('modal-form');
-        // onSnapshot handles the UI refresh; no need to call refreshCurrent() manually.
       }catch(e){
         toast('Error: '+e.message,'error');
-        // Re-enable button on error so user can retry
         if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Save Item'; }
       } finally {
-        _savingItem = false;
+        _savingItem=false;
       }
     }
     window.saveItem=saveItem;
@@ -2881,6 +3295,7 @@ const firebaseConfig = {
     async function init(){
       await loadDepts();
       loadDashboard();
+      loadItemCatalog();
       startRealtime();
     }
 
@@ -2913,18 +3328,19 @@ function toast(msg,type='success'){
   // ── Sheet detection ──
   const SKIP_SHEETS = ['ALL','Printing Sheet','Users','Sheet1','Sheet2','Sheet3'];
   let IMP_SHEET_MAP = {}, IMP_ALL_DEPTS = [], IMP_ROWS = [], IMP_MODE = 'replace';
+  let IMP_HAS_ITEMS_SHEET = false, IMP_CATALOG_ROWS = [];
 
   function impBuildSheetMap(names){
     IMP_SHEET_MAP = {}; IMP_ALL_DEPTS = [];
-    // Base department sheets (Office Supplies)
+    IMP_HAS_ITEMS_SHEET = names.includes('Items');
     names.forEach(n=>{
       if(SKIP_SHEETS.includes(n)) return;
+      if(n === 'Items') return; // handled separately
       if(n.endsWith(' Other Supplies') || n.endsWith(' Machinery')) return;
       const d = n.trim().toUpperCase();
       IMP_SHEET_MAP[n] = {dept:d, type:'Office Supplies'};
       if(!IMP_ALL_DEPTS.includes(d)) IMP_ALL_DEPTS.push(d);
     });
-    // Suffix sheets
     names.forEach(n=>{
       if(n.endsWith(' Other Supplies')){
         const d = n.slice(0,-15).trim().toUpperCase();
@@ -2956,6 +3372,49 @@ function toast(msg,type='success'){
     reader.onload = ev=>{
       const wb = XLSX.read(ev.target.result, {type:'array', cellDates:true});
       impBuildSheetMap(wb.SheetNames);
+
+      // ── Parse Items sheet (catalog) ──
+      IMP_CATALOG_ROWS = [];
+      if(IMP_HAS_ITEMS_SHEET){
+        const ws = wb.Sheets['Items'];
+        if(ws){
+          // Build a header-key normalizer: maps lowercase-trimmed → actual key in row
+          const normKey = (row, target) => {
+            const t = target.toLowerCase().trim();
+            return Object.keys(row).find(k => k.toLowerCase().trim() === t) || target;
+          };
+          XLSX.utils.sheet_to_json(ws, {defval:''}).forEach(row=>{
+            // Resolve actual column keys (handles extra spaces, casing differences)
+            const kDesc   = normKey(row, 'Description');
+            const kAcct   = normKey(row, 'Acct. Code');
+            const kTitle  = normKey(row, 'Acct. Title');
+            const kClass  = normKey(row, 'Classification');
+            const kType   = normKey(row, 'Type');
+            const kUnit   = normKey(row, 'Unit of Measure');
+            const kAvail  = normKey(row, 'Availability');
+            const kPrice  = normKey(row, 'Price');
+
+            const desc = (row[kDesc]||'').toString().trim();
+            if(!desc) return;
+            const rawPrice = row[kPrice];
+            const price = rawPrice !== '' && rawPrice !== null && rawPrice !== undefined
+              ? parseFloat(rawPrice) || 0 : 0;
+            const avail = (row[kAvail]||'').toString().trim();
+            IMP_CATALOG_ROWS.push({
+              acct_code       : (row[kAcct]||'').toString().trim(),
+              acct_title      : (row[kTitle]||'').toString().trim(),
+              classification  : (row[kClass]||'').toString().trim(),
+              description     : desc,
+              type            : (row[kType]||'').toString().trim(),
+              unit_of_measure : (row[kUnit]||'').toString().trim(),
+              availability    : avail || 'Available',
+              price           : price
+            });
+          });
+        }
+      }
+
+      // ── Parse department procurement sheets ──
       IMP_ROWS = [];
       Object.entries(IMP_SHEET_MAP).forEach(([sheet, meta])=>{
         const ws = wb.Sheets[sheet]; if(!ws) return;
@@ -2976,11 +3435,24 @@ function toast(msg,type='success'){
           });
         });
       });
+
       document.getElementById('imp-s1').className = 'imp-step-badge done';
       ['imp-c2','imp-c3','imp-c4'].forEach(id=>{ document.getElementById(id).style.display=''; });
+
+      // Show/hide Items mode card
+      const itemsCard = document.getElementById('imp-mc-items');
+      if(itemsCard) itemsCard.style.display = IMP_HAS_ITEMS_SHEET ? '' : 'none';
+
+      // Auto-select Items mode if ONLY Items sheet is present (no dept sheets)
+      if(IMP_HAS_ITEMS_SHEET && IMP_ROWS.length === 0 && IMP_CATALOG_ROWS.length > 0){
+        impSetMode('items');
+      }
+
       document.getElementById('imp-s2').className = 'imp-step-badge done';
       impBuildPreview();
-      document.getElementById('imp-icount').textContent = IMP_ROWS.length;
+      impPopulateDeptSelect();
+      document.getElementById('imp-icount').textContent =
+        IMP_MODE==='items' ? IMP_CATALOG_ROWS.length : IMP_ROWS.length;
     };
     reader.readAsArrayBuffer(file);
   };
@@ -2990,11 +3462,65 @@ function toast(msg,type='success'){
     IMP_MODE = m;
     document.getElementById('imp-mc-replace').classList.toggle('selected', m==='replace');
     document.getElementById('imp-mc-append').classList.toggle('selected',  m==='append');
+    const ic = document.getElementById('imp-mc-items');
+    if(ic) ic.classList.toggle('selected', m==='items');
     document.getElementById('imp-wbox').classList.toggle('show', m==='replace');
+    const note = document.getElementById('imp-items-note');
+    if(note) note.style.display = m==='items' ? '' : 'none';
+    const cnt = document.getElementById('imp-icount');
+    if(cnt) cnt.textContent = m==='items' ? IMP_CATALOG_ROWS.length : IMP_ROWS.length;
+    impBuildPreview();
   };
 
   // ── Preview ──
   function impBuildPreview(){
+    if(IMP_MODE === 'items'){
+      // Preview catalog rows
+      const avail = IMP_CATALOG_ROWS.filter(r=>!(r.availability||'').toLowerCase().includes('not')).length;
+      const notA  = IMP_CATALOG_ROWS.length - avail;
+      const classes = [...new Set(IMP_CATALOG_ROWS.map(r=>r.classification).filter(Boolean))];
+
+      document.getElementById('imp-summary').innerHTML = `
+        <div class="imp-sum-box"><div class="imp-sum-num">${IMP_CATALOG_ROWS.length}</div><div class="imp-sum-lbl">Catalog Items</div></div>
+        <div class="imp-sum-box"><div class="imp-sum-num" style="color:#3fb950">${avail}</div><div class="imp-sum-lbl">Available</div></div>
+        <div class="imp-sum-box"><div class="imp-sum-num" style="color:#f85149">${notA}</div><div class="imp-sum-lbl">Not Available</div></div>`;
+
+      document.getElementById('imp-depts').innerHTML =
+        classes.slice(0,12).map(c=>{
+          const cnt = IMP_CATALOG_ROWS.filter(r=>r.classification===c).length;
+          return `<div class="imp-dept-row">
+            <span class="imp-dept-name">${c}</span>
+            <span class="imp-dept-cnt imp-has-data">${cnt} items</span>
+          </div>`;
+        }).join('') +
+        (classes.length>12?`<div style="font-size:10px;color:#484f58;padding:4px 0">…and ${classes.length-12} more classifications</div>`:'') +
+        `<div style="font-size:10.5px;color:#484f58;margin-top:7px">
+          ${classes.length} classification(s) · Select a department above to assign these items.
+          Existing items with matching names will be <strong style="color:#e3b341">overwritten</strong>.
+        </div>`;
+
+      const th = `<thead><tr>
+        <th>#</th><th>Description</th><th>Classification</th><th>Type</th>
+        <th>Unit</th><th>Price</th><th>Availability</th>
+      </tr></thead>`;
+      const shown = IMP_CATALOG_ROWS.slice(0,60);
+      const tb = shown.map((r,i)=>`<tr>
+        <td style="color:#484f58">${i+1}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e6edf3;font-weight:500">${r.description}</td>
+        <td><span class="ibgr">${r.classification||'—'}</span></td>
+        <td style="color:#8b949e">${r.type||'—'}</td>
+        <td style="color:#8b949e">${r.unit_of_measure||'—'}</td>
+        <td style="font-family:monospace;color:#e3b341">₱${(parseFloat(r.price)||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
+        <td><span class="${(r.availability||'').toLowerCase().includes('not')?'ibr':'ibg'}">${r.availability}</span></td>
+      </tr>`).join('');
+      const more = IMP_CATALOG_ROWS.length>60
+        ? `<tr><td colspan="7" style="text-align:center;color:#484f58;padding:8px">…and ${IMP_CATALOG_ROWS.length-60} more items</td></tr>` : '';
+      document.getElementById('imp-ptable').innerHTML = th+`<tbody>${tb}${more}</tbody>`;
+      document.getElementById('imp-s3').className = 'imp-step-badge done';
+      return;
+    }
+
+    // Standard dept-sheet preview
     const byDept = {}; IMP_ALL_DEPTS.forEach(d=>byDept[d]=0);
     IMP_ROWS.forEach(r=>{ if(byDept[r.department]!==undefined) byDept[r.department]++; });
     const avail = IMP_ROWS.filter(r=>!r.availability.toLowerCase().includes('not')).length;
@@ -3043,8 +3569,53 @@ function toast(msg,type='success'){
   // ── Firestore import ──
   window.impStart = async function(){
     if(!window._fb){ alert('Firebase not ready yet — try again in a moment.'); return; }
-    if(!IMP_ROWS.length){ alert('No data to import.'); return; }
     const {db, collection, getDocs, writeBatch, doc} = window._fb;
+
+    // ── Items-sheet mode: save catalog only ──
+    if(IMP_MODE === 'items'){
+      if(!IMP_CATALOG_ROWS.length){ alert('No catalog data to import.'); return; }
+
+      const btn = document.getElementById('imp-ibtn');
+      btn.disabled = true; btn.textContent = 'Saving Catalog…';
+      document.getElementById('imp-pbar').style.display = '';
+      document.getElementById('imp-log').style.display  = '';
+
+      const log    = (msg,cls='ilin')=>{ const el=document.getElementById('imp-log'); el.innerHTML+=`<div class="${cls}">${msg}</div>`; el.scrollTop=el.scrollHeight; };
+      const prog   = pct=>{ document.getElementById('imp-pfill').style.width=pct+'%'; };
+      const status = (msg,c='')=>{ const el=document.getElementById('imp-stmsg'); el.textContent=msg; el.style.color=c||'#8b949e'; };
+
+      try {
+        log(`📚 Saving ${IMP_CATALOG_ROWS.length} items to catalog…`,'ilin');
+        status('Saving catalog…');
+        prog(20);
+
+        if(typeof window._saveCatalog === 'function'){
+          await window._saveCatalog(IMP_CATALOG_ROWS.map(r=>({...r})));
+        }
+
+        prog(100);
+        log(`🎉 Done! ${IMP_CATALOG_ROWS.length} catalog items saved.`,'ilok');
+        log(`ℹ️ Open the <strong>Item List</strong> panel and click <strong>+</strong> on any item to add it to a department.`,'ilin');
+        status(`✅ Catalog ready — ${IMP_CATALOG_ROWS.length} items.`,'#3fb950');
+        btn.textContent = '✅ Done';
+        document.getElementById('imp-s4').className = 'imp-step-badge done';
+        if(typeof toast === 'function') toast(`Catalog saved — ${IMP_CATALOG_ROWS.length} items ready in Item List`, 'success');
+
+        // Navigate to Item Catalog page automatically
+        if(typeof window.switchPage === 'function'){
+          setTimeout(()=>{ closeImporter(); window.switchPage('catalog'); }, 400);
+        }
+
+      } catch(e){
+        log(`❌ Error: ${e.message}`,'iler');
+        status('Save failed — see log.','#f85149');
+        btn.disabled = false; btn.textContent = '🚀 Retry';
+      }
+      return;
+    }
+
+    // ── Standard dept-sheet import ──
+    if(!IMP_ROWS.length){ alert('No data to import.'); return; }
 
     const btn = document.getElementById('imp-ibtn');
     btn.disabled = true; btn.textContent = 'Importing…';
@@ -3056,7 +3627,6 @@ function toast(msg,type='success'){
     const status = (msg,c='')=>{ const el=document.getElementById('imp-stmsg'); el.textContent=msg; el.style.color=c||'#8b949e'; };
 
     try{
-      // ── Delete phase (Replace mode) ──
       if(IMP_MODE==='replace'){
         log('🗑 Deleting existing records…','ilwa');
         status('Deleting…');
@@ -3074,7 +3644,6 @@ function toast(msg,type='success'){
         prog(15);
       }
 
-      // ── Auto-register new departments found in the Excel file ──
       if(typeof window._addDeptSilent === 'function'){
         for(const dept of IMP_ALL_DEPTS){
           if(typeof window._DEPTS_REF !== 'undefined' && !window._DEPTS_REF.includes(dept)){
@@ -3083,7 +3652,6 @@ function toast(msg,type='success'){
         }
       }
 
-      // ── Write phase ──
       log(`⏳ Writing ${IMP_ROWS.length} records…`,'ilin');
       status('Writing records…');
       let done = 0;
@@ -3112,7 +3680,7 @@ function toast(msg,type='success'){
 
   // ── Reset ──
   window.impReset = function(){
-    IMP_ROWS=[]; IMP_MODE='replace';
+    IMP_ROWS=[]; IMP_MODE='replace'; IMP_HAS_ITEMS_SHEET=false; IMP_CATALOG_ROWS=[];
     document.getElementById('imp-fname').textContent = '';
     document.getElementById('imp-file').value = '';
     ['imp-c2','imp-c3','imp-c4'].forEach(id=>document.getElementById(id).style.display='none');
@@ -3126,7 +3694,11 @@ function toast(msg,type='success'){
     document.getElementById('imp-stmsg').textContent  = '';
     document.getElementById('imp-mc-replace').classList.add('selected');
     document.getElementById('imp-mc-append').classList.remove('selected');
+    const ic = document.getElementById('imp-mc-items');
+    if(ic){ ic.classList.remove('selected'); ic.style.display='none'; }
     document.getElementById('imp-wbox').classList.remove('show');
+    const note = document.getElementById('imp-items-note');
+    if(note) note.style.display='none';
   };
 })();
 </script>
