@@ -10,8 +10,17 @@
 <title>Annual Procurement Planning — Municipality of Balayan</title>
 <script>
   if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{window.location.reload();});
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+    // Auto-reload when the SW takes control (covers first-install claim)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+    // Auto-reload when the SW explicitly broadcasts SW_UPDATED after activating
+    navigator.serviceWorker.addEventListener('message', e => {
+      if(e.data && e.data.type === 'SW_UPDATED') window.location.reload();
+    });
   }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -238,6 +247,58 @@ body::before {
 .btn-import-top svg { width: 13px; height: 13px; }
 .btn-import-top:hover { background: rgba(88,166,255,.22); color: #a8d0ff; border-color: rgba(88,166,255,.45); }
 .btn-import-top:active { transform: scale(.97); }
+
+/* ════ PIN MODAL ════ */
+#pin-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(4,8,16,.78); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+}
+#pin-overlay.open { display: flex; }
+.pin-box {
+  background: #161b22; border: 1px solid #30363d;
+  border-radius: 14px; padding: 28px 32px 24px;
+  width: 300px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  animation: pgIn .18s ease;
+}
+.pin-title { font-size: 15px; font-weight: 700; color: #e6edf3; margin-bottom: 4px; }
+.pin-sub   { font-size: 11px; color: #8b949e; margin-bottom: 20px; }
+.pin-dots  { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #21262d; border: 2px solid #30363d;
+  transition: background .15s, border-color .15s;
+}
+.pin-dot.filled { background: #58a6ff; border-color: #58a6ff; }
+.pin-dot.error  { background: #f85149; border-color: #f85149; }
+.pin-pad { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.pin-key {
+  background: #21262d; border: 1px solid #30363d;
+  border-radius: 10px; padding: 14px 0;
+  font-size: 18px; font-weight: 700; color: #e6edf3;
+  cursor: pointer; transition: background .12s, transform .1s;
+  user-select: none;
+}
+.pin-key:hover  { background: #2d333b; border-color: #484f58; }
+.pin-key:active { transform: scale(.93); background: #30363d; }
+.pin-key.del    { font-size: 14px; color: #8b949e; }
+.pin-cancel {
+  background: none; border: none; color: #484f58;
+  font-size: 12px; cursor: pointer; font-family: inherit;
+  transition: color .15s; padding: 4px 8px;
+}
+.pin-cancel:hover { color: #8b949e; }
+.pin-shake {
+  animation: pinShake .35s ease;
+}
+@keyframes pinShake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-6px); }
+  80%      { transform: translateX(6px); }
+}
 
 /* ════ LOGOUT BUTTON (topbar) ════ */
 .btn-logout-top {
@@ -984,7 +1045,7 @@ tbody td:last-child { border-right: none; }
 .login-card{position:relative;background:#fff;border-radius:18px;padding:40px 36px 32px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;gap:0;}
 .login-logo{width:64px;height:64px;margin-bottom:14px;}
 .login-logo img{width:100%;height:100%;object-fit:contain;}
-.login-title{font-size:20px;font-weight:800;color:#1B3A6B;letter-spacing:.4px;margin-bottom:3px;}
+.login-title{font-size:20px;font-weight:800;color:#1B3A6B;text-align:center;letter-spacing:.4px;margin-bottom:3px;}
 .login-sub{font-size:10.5px;color:#64748B;text-align:center;margin-bottom:24px;line-height:1.5;}
 .login-form{width:100%;display:flex;flex-direction:column;gap:14px;}
 .login-field{display:flex;flex-direction:column;gap:5px;}
@@ -1007,7 +1068,7 @@ tbody td:last-child { border-right: none; }
     <div class="login-logo">
       <img src="./logo.png" alt="Logo" onerror="this.style.display='none'">
     </div>
-    <div class="login-title">APP-CSE 2026</div>
+    <div class="login-title">Annual Procurement Planning</div>
     <div class="login-sub">Municipality of Balayan — General Services Office</div>
     <div class="login-form">
       <div class="login-field">
@@ -1093,7 +1154,7 @@ tbody td:last-child { border-right: none; }
 
     <div class="sidebar-footer">
       <div class="sidebar-footer-info">
-        <div class="sidebar-footer-label">Annual Procurement Planning System</div>
+        <div class="sidebar-footer-label">APP-CSE v28</div>
         <div class="sidebar-footer-sub">Municipality of Balayan</div>
       </div>
       <div class="sidebar-footer-dot" title="Online"></div>
@@ -1250,6 +1311,35 @@ tbody td:last-child { border-right: none; }
   </div><!-- /#content-wrap -->
 </div><!-- /#main-area -->
 </div><!-- /#shell -->
+
+<!-- ═══ PIN GATE ═══ -->
+<div id="pin-overlay">
+  <div class="pin-box" id="pin-box">
+    <div class="pin-title">🔒 Importer PIN</div>
+    <div class="pin-sub">Enter your 4-digit access code</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <div></div>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <button class="pin-cancel" onclick="pinCancel()">Cancel</button>
+  </div>
+</div>
 
 <!-- ═══ IMPORTER DRAWER ═══ -->
 <div id="importer-overlay" onclick="impOverlayClick(event)">
@@ -3160,8 +3250,58 @@ function toast(msg,type='success'){
     });
   }
 
+  // ── PIN gate ──
+  const PIN_CORRECT = '1578';
+  let _pinEntry = '';
+
+  function pinUpdateDots(shake){
+    for(let i=0;i<4;i++){
+      const d=document.getElementById('pd'+i);
+      d.classList.toggle('filled', i < _pinEntry.length);
+      d.classList.remove('error');
+    }
+    if(shake){
+      for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.add('error');
+      document.getElementById('pin-box').classList.add('pin-shake');
+      setTimeout(()=>{ document.getElementById('pin-box').classList.remove('pin-shake'); },400);
+    }
+  }
+
+  window.pinKey = function(k){
+    if(_pinEntry.length >= 4) return;
+    _pinEntry += k;
+    pinUpdateDots(false);
+    if(_pinEntry.length === 4){
+      if(_pinEntry === PIN_CORRECT){
+        // Correct — close PIN, open importer
+        setTimeout(()=>{
+          document.getElementById('pin-overlay').classList.remove('open');
+          _pinEntry = '';
+          pinUpdateDots(false);
+          document.getElementById('importer-overlay').classList.add('open');
+        }, 120);
+      } else {
+        // Wrong — shake and reset
+        pinUpdateDots(true);
+        setTimeout(()=>{ _pinEntry=''; pinUpdateDots(false); }, 600);
+      }
+    }
+  };
+
+  window.pinDel = function(){
+    if(!_pinEntry.length) return;
+    _pinEntry = _pinEntry.slice(0,-1);
+    pinUpdateDots(false);
+  };
+
+  window.pinCancel = function(){
+    _pinEntry = '';
+    pinUpdateDots(false);
+    document.getElementById('pin-overlay').classList.remove('open');
+  };
+
   // ── Drawer open / close ──
-  window.openImporter   = ()=>{ document.getElementById('importer-overlay').classList.add('open'); };
+  window.openImporter   = ()=>{ _pinEntry=''; pinUpdateDots(false); document.getElementById('pin-overlay').classList.add('open'); };
   window.closeImporter  = ()=>{ document.getElementById('importer-overlay').classList.remove('open'); };
   window.impOverlayClick = e=>{ if(e.target.id==='importer-overlay') closeImporter(); };
 
