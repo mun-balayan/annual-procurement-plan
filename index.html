@@ -2,15 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Annual Procurement Planning">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Annual Procurement Plan — Municipality of Balayan">
 <meta name="theme-color" content="#111827">
 <link rel="icon" type="image/png" href="./logo.png">
-<link rel="apple-touch-icon" href="./logo.png">
 <link rel="shortcut icon" href="./logo.png">
 <title>Annual Procurement Planning — Municipality of Balayan</title>
 <script>
@@ -107,8 +102,6 @@
   /* ── Layout ── */
   --bar-h:     58px;
   --sidebar-w: 230px;
-  --safe-bot:  env(safe-area-inset-bottom, 0px);
-
   /* ── Timing ── */
   --t1: .12s cubic-bezier(.4,0,.2,1);
   --t2: .2s  cubic-bezier(.4,0,.2,1);
@@ -125,7 +118,7 @@ body {
   font-family: var(--ff);
   line-height: 1.55;
   overflow: hidden;
-  height: 100vh; height: 100dvh;
+  height: 100vh;
 }
 button, input, select, textarea { font-family: var(--ff); }
 button { cursor: pointer; }
@@ -151,7 +144,7 @@ body::before {
 #shell {
   position: relative; z-index: 1;
   display: flex; flex-direction: column;
-  height: 100vh; height: 100dvh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -367,14 +360,6 @@ body::before {
 .ibgr{display:inline-flex;padding:1px 7px;border-radius:4px;font-size:9.5px;font-weight:600;background:#21262d;color:#8b949e;border:1px solid #30363d;}
 .ibp {display:inline-flex;padding:1px 7px;border-radius:4px;font-size:9.5px;font-weight:600;background:rgba(107,53,168,.12);color:#c792ea;border:1px solid rgba(107,53,168,.3);}
 
-#mobile-menu-btn {
-  display: none; background: none; border: none;
-  color: rgba(255,255,255,.6); padding: 4px 14px;
-  transition: color var(--t1);
-}
-#mobile-menu-btn:hover { color: #fff; }
-#mobile-menu-btn svg { width: 22px; height: 22px; }
-
 /* ════ OFFLINE BANNER ════ */
 #offline-banner {
   display: none;
@@ -509,39 +494,11 @@ body::before {
 /* ════ CONTENT WRAP ════ */
 #content-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-#sidebar-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(8,14,25,.6);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-}
-#sidebar-overlay.show { display: block; }
-
 /* ════ CONTENT ════ */
-#content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+#content { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .page { display: none; padding: 28px 30px; animation: pgIn .2s ease; }
 .page.active { display: block; }
 @keyframes pgIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ════ BOTTOM NAV ════ */
-#bottom-nav {
-  display: none; background: var(--sb);
-  flex-shrink: 0; padding-bottom: var(--safe-bot);
-  border-top: 1px solid rgba(255,255,255,.07);
-  box-shadow: 0 -4px 24px rgba(0,0,0,.35);
-}
-.bnav-inner { display: flex; }
-.bnav-btn {
-  flex: 1; background: none; border: none;
-  color: rgba(255,255,255,.35);
-  display: flex; flex-direction: column; align-items: center;
-  padding: 10px 0 8px; font-size: 9px; gap: 4px;
-  transition: color var(--t2);
-  font-family: var(--ff); font-weight: 700;
-  text-transform: uppercase; letter-spacing: .5px;
-}
-.bnav-btn.active { color: #FFD060; }
-.bnav-btn svg { width: 20px; height: 20px; }
 
 /* ════ PAGE HEADER ════ */
 .page-header {
@@ -984,34 +941,6 @@ tbody td:last-child { border-right: none; }
 .toast.success { background: var(--green); }
 .toast.error   { background: var(--red); }
 
-/* ════ MOBILE CARDS ════ */
-.mobile-cards { display: none; }
-.m-card {
-  background: var(--surface); border: 1.5px solid var(--bd2);
-  border-left: 3px solid var(--bd);
-  border-radius: var(--r2); padding: 13px 15px;
-  margin-bottom: 9px; cursor: pointer;
-  transition: all var(--t2); animation: fadeUp .2s ease both; box-shadow: var(--sh0);
-}
-.m-card:hover { border-left-color: var(--gold3); box-shadow: var(--sh2); transform: translateY(-1px); }
-.m-card:active { transform: scale(.99); }
-.m-card-title { font-weight: 700; font-size: 14px; color: var(--blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 7px; }
-.m-card-row   { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--ink3); gap: 8px; flex-wrap: wrap; }
-
-/* ════ FAB ════ */
-.fab {
-  display: none; position: fixed;
-  right: 18px; bottom: calc(58px + 14px + var(--safe-bot));
-  width: 52px; height: 52px; border-radius: 16px;
-  background: var(--gold-g); border: none; color: #fff;
-  box-shadow: 0 4px 22px rgba(181,120,10,.52);
-  align-items: center; justify-content: center; z-index: 50;
-  transition: transform var(--t2), box-shadow var(--t2);
-}
-.fab svg { width: 24px; height: 24px; }
-.fab:hover { transform: scale(1.07); box-shadow: 0 6px 28px rgba(181,120,10,.6); }
-.fab:active { transform: scale(.93); }
-
 /* ════ DEPT PILLS ════ */
 .dept-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .dept-pill {
@@ -1035,65 +964,11 @@ tbody td:last-child { border-right: none; }
 /* ════ ANIMATIONS ════ */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ════ RESPONSIVE ════ */
-@media (max-width: 1100px) {
-  .stats-row { grid-template-columns: repeat(2,1fr); }
-  .dash-grid { grid-template-columns: 1fr; }
-  :root { --sidebar-w: 200px; }
-}
-@media (max-width: 768px) {
-  :root { --bar-h: 52px; --sidebar-w: 256px; }
-  .page { padding: 14px 14px calc(14px + var(--safe-bot)); }
-  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-card { padding: 14px 14px; }
-  .stat-num { font-size: 28px; }
-  .stat-num.sm { font-size: 16px; }
-  .dash-grid { grid-template-columns: 1fr; }
-  #mobile-menu-btn { display: flex; }
-  .tb-clock { display: none; }
-  .btn-add-top { display: none; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-actions { flex-direction: column-reverse; }
-  .form-actions .btn { width: 100%; justify-content: center; }
-  .modal-overlay { align-items: flex-end; padding: 0; }
-  .modal { max-width: 100%; border-radius: 20px 20px 0 0; max-height: 92dvh; }
-  .table-wrap { display: none; }
-  .mobile-cards { display: block; }
-  .hide-mobile { display: none !important; }
-  #bottom-nav { display: block; }
-  .fab { display: flex; }
-  .page-title { font-size: 22px; }
-  .page-header { margin-bottom: 16px; }
-  .tb-name { font-size: 13px; }
-  .tb-sub { display: none; }
-  .tb-brand { padding: 0 14px; min-width: 0; }
-  .tb-right { padding: 0 12px; }
-  .type-totals-row { grid-template-columns: 1fr 1fr; }
-  .type-totals-row .type-total-card:last-child { grid-column: 1/-1; }
-  #sidebar {
-    position: fixed; left: 0; top: var(--bar-h); bottom: 0;
-    transform: translateX(-100%);
-    transition: transform var(--t3);
-    z-index: 300; box-shadow: 6px 0 40px rgba(0,0,0,.5);
-  }
-  #sidebar.mobile-open { transform: translateX(0); }
-  .sidebar-footer { display: none; }
-}
-@media (max-width: 390px) {
-  .stats-row { gap: 8px; }
-  .stat-num { font-size: 24px; }
-  .page-title { font-size: 19px; }
-  .badge { font-size: 10px; padding: 2px 8px; }
-  .modal-title { font-size: 17px; }
-  .modal-body { padding: 16px; }
-  .type-totals-row { grid-template-columns: 1fr; }
-  .type-totals-row .type-total-card:last-child { grid-column: auto; }
-}
 @media print {
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body{overflow:auto;height:auto;background:#fff;}
   #shell{height:auto;overflow:visible;}
-  #topbar,#bottom-nav,.fab,.toast,#sidebar,.hdr-actions,.toolbar,#offline-banner,#mobile-menu-btn{display:none!important;}
+  #topbar,.toast,#sidebar,.hdr-actions,.toolbar,#offline-banner{display:none!important;}
   #main-area{flex-direction:column;}
   #content-wrap,#content{overflow:visible;}
   .page{display:block!important;padding:0;}
@@ -1166,10 +1041,6 @@ tbody td:last-child { border-right: none; }
     </div>
   </div>
 
-  <button id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
-  </button>
-
   <div id="topbar-center"></div>
 
   <div class="tb-right">
@@ -1191,8 +1062,6 @@ tbody td:last-child { border-right: none; }
 
 <!-- MAIN AREA -->
 <div id="main-area">
-  <div id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
-
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-inner">
@@ -1224,7 +1093,7 @@ tbody td:last-child { border-right: none; }
 
     <div class="sidebar-footer">
       <div class="sidebar-footer-info">
-        <div class="sidebar-footer-label">APP-CSE v27</div>
+        <div class="sidebar-footer-label">APP-CSE v28</div>
         <div class="sidebar-footer-sub">Municipality of Balayan</div>
       </div>
       <div class="sidebar-footer-dot" title="Online"></div>
@@ -1296,7 +1165,6 @@ tbody td:last-child { border-right: none; }
           </select>
         </div>
         <div id="items-table"></div>
-        <div class="mobile-cards" id="items-cards"></div>
       </div>
 
       <!-- DEPT PAGE -->
@@ -1341,7 +1209,6 @@ tbody td:last-child { border-right: none; }
           </select>
         </div>
         <div id="dept-table"></div>
-        <div class="mobile-cards" id="dept-cards"></div>
       </div>
 
       <!-- ITEM CATALOG -->
@@ -1376,28 +1243,9 @@ tbody td:last-child { border-right: none; }
           </select>
         </div>
         <div id="catalog-table"></div>
-        <div class="mobile-cards" id="catalog-cards"></div>
       </div>
 
     </div><!-- /#content -->
-
-    <!-- BOTTOM NAV -->
-    <div id="bottom-nav">
-      <div class="bnav-inner">
-        <button class="bnav-btn active" id="bnav-dashboard" onclick="switchPage('dashboard')">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
-          Dashboard
-        </button>
-        <button class="bnav-btn" id="bnav-items" onclick="switchPage('items')">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg>
-          All Items
-        </button>
-        <button class="bnav-btn" id="bnav-dept" onclick="switchPage('dept')">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="1.5"/><path d="M6 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          Dept
-        </button>
-      </div>
-    </div>
 
   </div><!-- /#content-wrap -->
 </div><!-- /#main-area -->
@@ -1567,9 +1415,6 @@ tbody td:last-child { border-right: none; }
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<button class="fab" id="fab-btn" onclick="openAddModal()" aria-label="Add item">
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
-</button>
 
 <!-- ═══ FIREBASE (UNTOUCHED) ═══ -->
 
@@ -1597,7 +1442,7 @@ const firebaseConfig = {
     function setOnlineState(online){
       isOnline = online;
       document.getElementById('offline-banner').classList.toggle('show', !online);
-      ['fab-btn','topbar-add-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=online?'':'none'; });
+      ['topbar-add-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=online?'':'none'; });
     }
     window.addEventListener('online',  ()=>{ setOnlineState(true);  toast('Back online!','success'); });
     window.addEventListener('offline', ()=>{ setOnlineState(false); });
@@ -1856,8 +1701,8 @@ const firebaseConfig = {
       }
 
       tableEl.innerHTML = `<div class="table-wrap"><table><thead><tr>
-        <th>Acct. Code</th><th>Description</th><th class="hide-mobile">Acct. Title</th>
-        <th class="hide-mobile">Classification</th><th class="hide-mobile">Unit</th>
+        <th>Acct. Code</th><th>Description</th><th>Acct. Title</th>
+        <th>Classification</th><th>Unit</th>
         <th>Price</th><th>Status</th><th></th>
       </tr></thead><tbody>
         ${list.map(item=>{
@@ -1867,9 +1712,9 @@ const firebaseConfig = {
           return `<tr onclick="showCatalogDetail('${sid}')">
             <td class="cat-acct">${item.acct_code||'—'}</td>
             <td class="td-item">${item.description||'—'}</td>
-            <td class="hide-mobile td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.acct_title||'—'}</td>
-            <td class="hide-mobile"><span class="cat-class-badge">${item.classification||'—'}</span></td>
-            <td class="hide-mobile td-muted">${item.unit_of_measure||'—'}</td>
+            <td class="td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.acct_title||'—'}</td>
+            <td><span class="cat-class-badge">${item.classification||'—'}</span></td>
+            <td class="td-muted">${item.unit_of_measure||'—'}</td>
             <td class="td-mono">₱${price.toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
             <td>${isAvail?'<span class="badge badge-green">Available</span>':'<span class="badge badge-red">Not Available</span>'}</td>
             <td onclick="event.stopPropagation()">
@@ -1880,24 +1725,6 @@ const firebaseConfig = {
           </tr>`;
         }).join('')}
       </tbody></table></div>`;
-
-      document.getElementById('catalog-cards').innerHTML = list.map((item,idx)=>{
-        const isAvail = !(item.availability||'').toLowerCase().includes('not');
-        const price = parseFloat(item.price||0);
-        const sid = (item.id||'').replace(/'/g,"\\'");
-        return `<div class="m-card" style="animation-delay:${Math.min(idx,10)*.02}s" onclick="showCatalogDetail('${sid}')">
-          <div class="m-card-title">${item.description||'—'}</div>
-          <div class="m-card-row" style="margin-top:4px">
-            <span class="cat-acct">${item.acct_code||''}</span>
-            <span class="cat-class-badge">${item.classification||''}</span>
-            ${isAvail?'<span class="badge badge-green">Available</span>':'<span class="badge badge-red">Not Available</span>'}
-          </div>
-          <div class="m-card-row" style="margin-top:6px">
-            <span class="td-muted">${item.unit_of_measure||'—'}</span>
-            <span class="td-amount">₱${price.toLocaleString('en-PH',{minimumFractionDigits:2})}</span>
-          </div>
-        </div>`;
-      }).join('');
     };
 
     // ── Catalog detail modal ──
@@ -2095,7 +1922,7 @@ const firebaseConfig = {
     setInterval(updateTime,1000); updateTime();
 
     // ── Navigation ──
-    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); document.getElementById('sidebar').classList.remove('mobile-open'); const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show'); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); else if(pg==='catalog') loadCatalogPage(); }
+    function switchPage(pg){ S.page=pg; S.dept=null; activatePage(pg); if(pg==='dashboard') loadDashboard(); else if(pg==='items') loadItems(); else if(pg==='catalog') loadCatalogPage(); }
     window.switchPage=switchPage;
 
     function switchDept(dept){
@@ -2103,12 +1930,8 @@ const firebaseConfig = {
       document.getElementById('dept-heading').innerHTML=`<em>${dept}</em> Department`;
       document.getElementById('dept-sub').textContent=`Annual Procurement Plan — ${dept}`;
       const pb=document.getElementById('dept-print-btn'); if(pb) pb.style.display='';
-      document.querySelectorAll('.snav-btn,.bnav-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(`tab-${dept}`)?.classList.add('active');
-      document.getElementById('bnav-dept')?.classList.add('active');
-      // Close mobile sidebar
-      document.getElementById('sidebar').classList.remove('mobile-open');
-      const ov=document.getElementById('sidebar-overlay');if(ov)ov.classList.remove('show');
       filterDeptPage();
     }
     window.switchDept=switchDept;
@@ -2118,12 +1941,8 @@ const firebaseConfig = {
       document.getElementById(`page-${pg}`).classList.add('active');
       document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
       document.getElementById(`tab-${pg}`)?.classList.add('active');
-      document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
-      document.getElementById(`bnav-${pg}`)?.classList.add('active');
     }
     window.refreshCurrent=()=>{ if(S.dept) switchDept(S.dept); else switchPage(S.page); };
-    function toggleMobileMenu(){ const sb=document.getElementById('sidebar');const ov=document.getElementById('sidebar-overlay');const open=sb.classList.toggle('mobile-open');if(ov)ov.classList.toggle('show',open); }
-    window.toggleMobileMenu=toggleMobileMenu;
 
     // ── Dashboard ──
     // renderDashboard() works purely off S.items — no Firestore fetch.
@@ -2254,7 +2073,7 @@ const firebaseConfig = {
       S.itemAvail=document.getElementById('items-avail').value;
       const list=filteredItems();
       document.getElementById('items-count').textContent=`${list.length} record${list.length!==1?'s':''}`;
-      renderTable(list,'items-table','items-cards',true);
+      renderTable(list,'items-table',true);
     }
     window.filterItems=filterItems;
 
@@ -2299,7 +2118,7 @@ const firebaseConfig = {
           <div class="type-total-count">${typeCounts['Machinery']} item${typeCounts['Machinery']!==1?'s':''}</div>
         </div>`;
 
-      renderTable(list,'dept-table','dept-cards',false);
+      renderTable(list,'dept-table',false);
     }
     window.filterDept=filterDeptPage;
 
@@ -2313,43 +2132,30 @@ const firebaseConfig = {
       return `<span class="badge badge-gray">${nt||'—'}</span>`;
     }
 
-    function renderTable(list,tableId,cardsId,showDept){
+    function renderTable(list,tableId,showDept){
       const el=document.getElementById(tableId);
       if(!list.length){
         el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="1.5"/><path d="M7 6h6M7 9h6M7 12h4"/></svg></div><div class="empty-text">No items found.</div><button class="btn btn-gold btn-sm" onclick="openAddModal()">Add First Item</button></div>`;
-        document.getElementById(cardsId).innerHTML=''; return;
+        return;
       }
-      const dCol=showDept?`<th class="hide-mobile">Dept</th>`:'';
+      const dCol=showDept?`<th>Dept</th>`:'';
       el.innerHTML=`<div class="table-wrap"><table><thead><tr>
-        <th>Item</th>${dCol}<th class="hide-mobile">Type</th>
-        <th class="hide-mobile">Month</th><th class="hide-mobile">Unit</th>
+        <th>Item</th>${dCol}<th>Type</th>
+        <th>Month</th><th>Unit</th>
         <th>Unit Price</th><th>Qty</th><th>Total</th><th>Status</th>
       </tr></thead><tbody>
         ${list.map(i=>`<tr onclick="showItemModal('${i.id}')">
           <td class="td-item">${i.item||'—'}</td>
-          ${showDept?`<td class="hide-mobile td-muted">${i.department||'—'}</td>`:''}
-          <td class="hide-mobile">${tBadge(i.type)}</td>
-          <td class="hide-mobile td-muted">${i.month||'—'}</td>
-          <td class="hide-mobile td-muted">${i.unit_of_measure||'—'}</td>
+          ${showDept?`<td class="td-muted">${i.department||'—'}</td>`:''}
+          <td>${tBadge(i.type)}</td>
+          <td class="td-muted">${i.month||'—'}</td>
+          <td class="td-muted">${i.unit_of_measure||'—'}</td>
           <td class="td-mono">₱${parseFloat(i.unit_price||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
           <td class="td-muted">${i.quantity||'—'}</td>
           <td class="td-amount">₱${parseFloat(i.total_amount||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
           <td>${avBadge(i.availability)}</td>
         </tr>`).join('')}
       </tbody></table></div>`;
-      document.getElementById(cardsId).innerHTML=list.map((i,idx)=>`
-        <div class="m-card" style="animation-delay:${Math.min(idx,10)*.02}s" onclick="showItemModal('${i.id}')">
-          <div class="m-card-title">${i.item||'—'}</div>
-          <div class="m-card-row" style="margin-top:4px">
-            ${showDept&&i.department?`<span class="badge badge-blue">${i.department}</span>`:''}
-            ${tBadge(i.type)} <span class="td-muted">${i.month||''}</span>
-            ${avBadge(i.availability)}
-          </div>
-          <div class="m-card-row" style="margin-top:6px">
-            <span class="td-muted">Qty: ${i.quantity||'—'} ${i.unit_of_measure||''}</span>
-            <span class="td-amount">₱${parseFloat(i.total_amount||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</span>
-          </div>
-        </div>`).join('');
     }
 
     // ── Detail modal ──
