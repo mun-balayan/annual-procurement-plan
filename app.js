@@ -1060,10 +1060,33 @@ const firebaseConfig = {
       // Legacy migration: if record uses old single month+quantity format,
       // copy quantity into the correct monthly qty field before opening form
       const itemCopy = {...i, type: normalizeType(i.type)};
-      if(itemCopy.month && !Object.values(MONTH_KEYS).some(k=>itemCopy[k])){
-        // No per-month keys set — inject legacy qty into the matching month
-        const legacyKey = MONTH_KEYS[itemCopy.month];
-        if(legacyKey) itemCopy[legacyKey] = parseFloat(itemCopy.quantity)||0;
+      // Ensure the edit form shows the latest quantities after PR deductions.
+      // The form's "Total Quantity" is calculated from monthly qty inputs, not `quantity`,
+      // so if monthly fields are stale while `quantity` is updated, force-align them.
+      if(itemCopy){
+        const qNow = parseFloat(itemCopy.quantity||0)||0;
+        const mKeys = Object.values(MONTH_KEYS);
+        const sumMonthly = mKeys.reduce((s,k)=>s+(parseFloat(itemCopy[k]||0)||0),0);
+        const delta = Math.abs(qNow - sumMonthly);
+        const monthKey = itemCopy.month ? MONTH_KEYS[itemCopy.month] : null;
+        const nonZeroKeys = mKeys.filter(k=>(parseFloat(itemCopy[k]||0)||0) > 0);
+        const shouldForceAlign = delta > 1e-9 && nonZeroKeys.length <= 1;
+
+        if(shouldForceAlign){
+          // For the common data model (single month record), all qty should live in one month field.
+          if(monthKey){
+            mKeys.forEach(k=>{ if(k !== monthKey) itemCopy[k] = null; });
+            itemCopy[monthKey] = qNow;
+          } else if(nonZeroKeys.length === 1){
+            const k0 = nonZeroKeys[0];
+            mKeys.forEach(k=>{ if(k !== k0) itemCopy[k] = null; });
+            itemCopy[k0] = qNow;
+          }
+        } else if(itemCopy.month && !mKeys.some(k=>itemCopy[k])){
+          // No per-month keys set — inject legacy qty into the matching month
+          const legacyKey = MONTH_KEYS[itemCopy.month];
+          if(legacyKey) itemCopy[legacyKey] = qNow;
+        }
       }
       document.getElementById('form-title').textContent='Edit Procurement Item';
       document.getElementById('form-body').innerHTML=itemForm(itemCopy);
@@ -1926,7 +1949,7 @@ const firebaseConfig = {
 
       const dataRows = cartItems.map((c,idx)=>{
         const lineTotal = c.unit_price * c.qty;
-        return `<tr>
+        return `<tr class="data-row">
           <td class="tc">${idx+1}</td>
           <td class="tc">${c.qty}</td>
           <td class="tc">${c.unit_of_measure||'—'}</td>
@@ -1937,7 +1960,7 @@ const firebaseConfig = {
       }).join('');
 
       // Filler rows: enough to fill the page; height:1% distributes remaining space evenly
-      const fillerCount = Math.max(0, 36 - cartItems.length);
+      const fillerCount = Math.max(0, 37 - cartItems.length);
       const fillerRows  = Array.from({length:fillerCount},(_,i)=>`<tr class="filler${i===fillerCount-1?' filler-last':''}"><td></td><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
 
       // ── @page margins: top 0.5in(13mm), sides 0.75in(19mm), bottom 0.75in(19mm) ──
@@ -2013,13 +2036,52 @@ const firebaseConfig = {
         }
 
         /* ── ITEMS TABLE ── */
-        .items-table-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+        .items-table-wrap{
+          flex:1;
+          display:flex;
+          flex-direction:column;
+          overflow:hidden;
+          position:relative;
+          background:#fff;
+        }
+        /* Locked column guides: always continuous regardless of tbody row height. */
+        .items-table-wrap::after{
+          content:"";
+          position:absolute;
+          left:0;
+          right:0;
+          top:0;
+          bottom:0;
+          pointer-events:none;
+          z-index:0;
+          background-image:
+            linear-gradient(#000,#000),
+            linear-gradient(#000,#000),
+            linear-gradient(#000,#000),
+            linear-gradient(#000,#000),
+            linear-gradient(#000,#000);
+          background-repeat:no-repeat;
+          background-size:
+            1px 100%,
+            1px 100%,
+            1px 100%,
+            1px 100%,
+            1px 100%;
+          background-position:
+            38px 0,
+            94px 0,
+            160px 0,
+            calc(100% - 186px) 0,
+            calc(100% - 94px) 0;
+        }
         .items-table{
           width:100%;
           border-collapse:collapse;
           font-size:12px;
           height:100%;
           table-layout:fixed;
+          position:relative;
+          z-index:1;
         }
 
         /* Header row: full top+bottom border, vertical dividers between columns,
@@ -2032,9 +2094,9 @@ const firebaseConfig = {
           line-height:1.3;
           border-top:1px solid #000;
           border-bottom:1px solid #000;
-          border-left:1px solid #000;
+          border-left:none;
           border-right:none;
-          background:#fff;
+          background:transparent; /* allow items-table-wrap locked dividers to show */
         }
         .items-table thead th:first-child{border-left:none;}
         .items-table thead th:last-child{border-right:none;}
@@ -2043,7 +2105,7 @@ const firebaseConfig = {
         .items-table tbody td{
           border-top:none;
           border-bottom:none;
-          border-left:1px solid #000;
+          border-left:none;
           border-right:none;
           padding:3px 6px;
           vertical-align:middle;
@@ -2052,7 +2114,12 @@ const firebaseConfig = {
 
         /* Filler rows share remaining height evenly */
         .items-table .filler{height:1%;}
-        .items-table .filler td{padding:0;}
+        .items-table .filler td{
+          padding:0;
+          border-top:none;
+          border-bottom:none;
+          border-right:none;
+        }
 
         .tc{text-align:center;}
         .tl{text-align:left;}
@@ -2073,8 +2140,8 @@ const firebaseConfig = {
           font-weight:700;
           text-align:right;
           min-width:88px;
-          border-left:1px solid #000;
-          padding-left:8px;
+          border-left:none;
+          padding-left:0;
         }
 
         /* ── PURPOSE + CHARGEABLE ── */
@@ -2152,14 +2219,14 @@ const firebaseConfig = {
       `;
 
       const toolbar = `
-        <style id="pgStylePR">@page{size:A4 portrait;margin:13mm 19mm 19mm 19mm;}<\/style>
+        <style id="pgStylePR">@page{size:A4 portrait;margin:10mm 15mm 15mm 15mm;}<\/style>
         <script>
           function setPaperSizePR(val){
             var s=document.getElementById('pgStylePR');
             var isLegal=val==='legal';
             s.textContent=isLegal
-              ?'@page{size:legal portrait;margin:13mm 19mm 19mm 19mm;}'
-              :'@page{size:A4 portrait;margin:13mm 19mm 19mm 19mm;}';
+              ?'@page{size:legal portrait;margin:10mm 15mm 15mm 15mm;}'
+              :'@page{size:A4 portrait;margin:10mm 15mm 15mm 15mm;}';
             document.getElementById('pt-pr-lbl').textContent=
               'Ctrl+P \xB7 '+(isLegal?'Legal':'A4')+' \xB7 Portrait';
             // usable height = paper − top(13mm) − bottom(19mm)
