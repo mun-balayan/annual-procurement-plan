@@ -2034,21 +2034,22 @@ const firebaseConfig = {
       const fillerCount = Math.max(0, 37 - cartItems.length);
       const fillerRows  = Array.from({length:fillerCount},(_,i)=>`<tr class="filler${i===fillerCount-1?' filler-last':''}"><td></td><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
 
-      // ── @page margins: top 0.5in(13mm), sides 0.75in(19mm), bottom 0.75in(19mm) ──
-      // Usable A4: 172mm wide × 265mm tall | Legal: 172mm wide × 324mm tall
+      // ── @page margins: printer-safe for actual paper output ──
+      // Usable A4: 196mm x 285mm | Legal: 202mm x 342mm
       const PR_CSS = `
         :root{
           --paper-w:198mm; /* A4 portrait with 6mm left/right margins */
-          --paper-h:287mm; /* A4 portrait with 4mm top + 6mm bottom margins */
+          --paper-h:289mm; /* A4 portrait with 4mm top/bottom margins */
         }
         *{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:'Arial',sans-serif;font-size:11px;color:#000;background:#fff;}
 
         /* ── PAGE SHELL ── */
         .page{
-          padding:1.5mm;
+          padding:0;
           width:var(--paper-w,198mm);
           margin:0 auto;
+          margin-top:46px;
           min-height:var(--paper-h,287mm);
           display:flex;
           flex-direction:column;
@@ -2119,41 +2120,24 @@ const firebaseConfig = {
           position:relative;
           background:#fff;
         }
-        /* Locked column guides: always continuous regardless of tbody row height. */
-        .items-table-wrap::after{
-          content:"";
+        .col-guide{
           position:absolute;
-          left:0;
-          right:0;
           top:0;
           bottom:0;
+          width:0;
+          border-left:.75pt solid #000;
           pointer-events:none;
           z-index:0;
-          background-image:
-            linear-gradient(#000,#000),
-            linear-gradient(#000,#000),
-            linear-gradient(#000,#000),
-            linear-gradient(#000,#000),
-            linear-gradient(#000,#000);
-          background-repeat:no-repeat;
-          background-size:
-            1px 100%,
-            1px 100%,
-            1px 100%,
-            1px 100%,
-            1px 100%;
-          background-position:
-            38px 0,
-            94px 0,
-            160px 0,
-            calc(100% - 186px) 0,
-            calc(100% - 94px) 0;
         }
+        .col-guide.g1{left:38px;}
+        .col-guide.g2{left:94px;}
+        .col-guide.g3{left:160px;}
+        .col-guide.g4{right:186px;}
+        .col-guide.g5{right:94px;}
         .items-table{
           width:100%;
           border-collapse:collapse;
           font-size:12px;
-          height:100%;
           table-layout:fixed;
           position:relative;
           z-index:1;
@@ -2171,8 +2155,10 @@ const firebaseConfig = {
           border-bottom:1px solid #000;
           border-left:none;
           border-right:none;
-          background:transparent; /* allow items-table-wrap locked dividers to show */
+          background:#fff;
+          background-clip:padding-box;
         }
+        .items-table thead th:nth-child(n+2){border-left:.75pt solid #000;}
         .items-table thead th:first-child{border-left:none;}
         .items-table thead th:last-child{border-right:none;}
 
@@ -2182,19 +2168,25 @@ const firebaseConfig = {
           border-bottom:none;
           border-left:none;
           border-right:none;
-          padding:3px 6px;
+          padding:1px 6px;
+          line-height:1.2;
           vertical-align:middle;
+          background-clip:padding-box;
         }
+        .items-table tbody td:nth-child(n+2){border-left:none;}
         .items-table tbody td:first-child{border-left:none;}
 
         /* Filler rows share remaining height evenly */
-        .items-table .filler{height:1%;}
+        .items-table .data-row td{height:16px;}
+        .items-table .filler{height:auto;}
         .items-table .filler td{
           padding:0;
+          height:16px;
           border-top:none;
           border-bottom:none;
           border-right:none;
         }
+        .items-table .filler td:nth-child(n+2){border-left:none;}
 
         .tc{text-align:center;}
         .tl{text-align:left;}
@@ -2216,7 +2208,7 @@ const firebaseConfig = {
           text-align:right;
           min-width:88px;
           border-left:none;
-          padding-left:0;
+          padding-left:8px;
         }
 
         /* ── PURPOSE + CHARGEABLE ── */
@@ -2286,29 +2278,28 @@ const firebaseConfig = {
         .pt-sel option{background:#1a3358;color:#fff;}
 
         @media print{
+          body{margin:0!important;padding:0!important;}
           .print-toolbar{display:none!important;}
-          .page{padding:1.5mm!important;margin-top:0!important;width:var(--paper-w,198mm)!important;}
+          .page{
+            padding:0!important;
+            margin:0 auto!important;
+            margin-top:0!important;
+            width:var(--paper-w,198mm)!important;
+            min-height:var(--paper-h,289mm)!important;
+            height:var(--paper-h,289mm)!important;
+            break-before:auto!important;
+            page-break-before:auto!important;
+            break-inside:auto!important;
+            page-break-inside:auto!important;
+          }
+          .pr-wrap,.pr-inner{min-height:100%!important;height:100%!important;}
           [contenteditable]:hover,[contenteditable]:focus{
             background:transparent!important;box-shadow:none!important;}
         }
       `;
 
       const toolbar = `
-        <style id="pgStylePR">@page{size:A4 portrait;margin:4mm 6mm 6mm 6mm;}<\/style>
-        <script>
-          function setPaperSizePR(val){
-            var s=document.getElementById('pgStylePR');
-            var isLegal=val==='legal';
-            s.textContent=isLegal
-              ?'@page{size:legal portrait;margin:4mm 6mm 6mm 6mm;}'
-              :'@page{size:A4 portrait;margin:4mm 6mm 6mm 6mm;}';
-            document.getElementById('pt-pr-lbl').textContent=
-              'Ctrl+P \xB7 '+(isLegal?'Legal':'A4')+' \xB7 Portrait';
-            // Usable area with margins top 4mm, left/right 6mm, bottom 6mm
-            document.documentElement.style.setProperty('--paper-w', isLegal?'204mm':'198mm');
-            document.documentElement.style.setProperty('--paper-h', isLegal?'346mm':'287mm');
-          }
-        <\/script>
+        <style id="pgStylePR">@page{size:A4 portrait;margin:4mm 6mm 4mm 6mm;}<\/style>
         <div class="print-toolbar">
           <button class="pt-btn pt-btn-print" onclick="window.print()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2319,11 +2310,7 @@ const firebaseConfig = {
             </svg>
             Print
           </button>
-          <select class="pt-sel" id="pt-pr-paper" onchange="setPaperSizePR(this.value)">
-            <option value="a4" selected>📄 A4</option>
-            <option value="legal">📄 Legal</option>
-          </select>
-          <span id="pt-pr-lbl" class="pt-info">Ctrl+P · A4 · Portrait</span>
+          <span class="pt-info">Ctrl+P · A4 · Portrait</span>
           <div class="pt-spacer"></div>
           <span class="pt-info">💡 Click any highlighted field to edit before printing</span>
           <button class="pt-btn pt-btn-close" onclick="window.close()">✕ Close</button>
@@ -2335,7 +2322,7 @@ const firebaseConfig = {
         <style>${PR_CSS}</style>
       </head><body>
         ${toolbar}
-        <div class="page" style="margin-top:46px;">
+        <div class="page">
           <div class="pr-wrap">
             <div class="pr-inner">
 
@@ -2401,6 +2388,11 @@ const firebaseConfig = {
 
               <!-- ③ ITEMS TABLE (vertical dividers only in body) -->
               <div class="items-table-wrap">
+                <span class="col-guide g1" aria-hidden="true"></span>
+                <span class="col-guide g2" aria-hidden="true"></span>
+                <span class="col-guide g3" aria-hidden="true"></span>
+                <span class="col-guide g4" aria-hidden="true"></span>
+                <span class="col-guide g5" aria-hidden="true"></span>
                 <table class="items-table">
                   <thead>
                     <tr>
