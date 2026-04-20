@@ -1368,31 +1368,51 @@ const firebaseConfig = {
         <td class="tr">${fmtC(grandTotal)}</td>
       </tr>`;
 
+      const dataCount = items.length;
+      const useCompactMode = dataCount > 30;
+      const useSplitMode = dataCount > 62;
+      const pageClass = `page${useCompactMode ? ' compact-mode' : ''}${useSplitMode ? ' split-mode' : ''}`;
+
       const PRINT_CSS = `
+        :root{
+          --app-page-top:2mm;
+          --app-body-size:9px;
+          --app-meta-size:8.5px;
+          --app-table-size:6.8px;
+          --app-th-size:6.4px;
+          --app-th-q-size:5.9px;
+          --app-th-m-size:5.4px;
+          --app-item-min:98px;
+          --app-item-max:130px;
+        }
         *{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Times New Roman',serif;font-size:8.5px;color:#000;background:#fff;}
-        .page{padding:4mm 4mm 5mm;}
+        body{font-family:'Times New Roman',serif;font-size:var(--app-body-size);color:#000;background:#fff;}
+        .page{padding:var(--app-page-top) 4mm 5mm;display:flex;flex-direction:column;min-height:100vh;}
         /* ── TITLE BLOCK ── */
         .form-header{margin-bottom:5px;}
-        .form-header-meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:8px;margin-bottom:3px;}
+        .form-header-meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:var(--app-meta-size);margin-bottom:3px;}
         .form-header-meta-left{line-height:1.6;}
         .form-header-meta-right{text-align:right;line-height:1.6;}
         .form-title-main{text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
-        .form-title-sub{text-align:center;font-size:8.5px;font-style:italic;color:#333;margin-bottom:5px;}
+        .form-title-sub{text-align:center;font-size:var(--app-body-size);font-style:italic;color:#333;margin-bottom:5px;}
         /* ── AGENCY INFO BOX ── */
-        .info-box{border:1px solid #555;padding:4px 8px;margin-bottom:5px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:0;font-size:7.5px;}
+        .info-box{border:1px solid #555;padding:4px 8px;margin-bottom:5px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:0;font-size:calc(var(--app-meta-size) - .6px);}
         .info-cell{padding:2px 6px 2px 0;border-right:1px solid #bbb;display:flex;align-items:flex-end;gap:4px;}
         .info-cell:last-child{border-right:none;}
         .info-lbl{color:#555;white-space:nowrap;}
         .info-val{font-weight:700;border-bottom:1px solid #000;flex:1;padding-bottom:1px;min-width:30px;}
         /* ── TABLE ── */
-        table{width:100%;border-collapse:collapse;font-size:6.2px;}
-        th,td{border:1px solid #555;padding:1.5px 2px;vertical-align:middle;}
-        th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:6px;letter-spacing:.1px;line-height:1.3;}
-        th.grp-hd{background:#0d2145;font-size:6px;}
-        th.q-hd{background:#1e4070;font-size:5.5px;}
-        th.m-hd{background:#2d4f7c;font-size:5px;}
-        .item-col{min-width:90px;max-width:120px;word-break:break-word;white-space:normal;line-height:1.3;}
+        .table-wrap{flex:1;display:flex;flex-direction:column;min-height:0;}
+        table{width:100%;border-collapse:collapse;font-size:var(--app-table-size);}
+        thead{display:table-header-group;}
+        tfoot{display:table-footer-group;}
+        tr{break-inside:avoid;page-break-inside:avoid;}
+        th,td{border:1px solid #555;padding:1px 1.6px;vertical-align:middle;}
+        th{background:#1a3358;color:#fff;font-weight:700;text-align:center;font-size:var(--app-th-size);letter-spacing:.1px;line-height:1.3;}
+        th.grp-hd{background:#0d2145;font-size:var(--app-th-size);}
+        th.q-hd{background:#1e4070;font-size:var(--app-th-q-size);}
+        th.m-hd{background:#2d4f7c;font-size:var(--app-th-m-size);}
+        .item-col{min-width:var(--app-item-min);max-width:var(--app-item-max);word-break:break-word;white-space:normal;line-height:1.3;}
         .tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}
         .bold{font-weight:700;}.italic{font-style:italic;}
         /* ── SECTION ROWS ── */
@@ -1404,12 +1424,28 @@ const firebaseConfig = {
         .grand-total td{background:#1a3358;color:#fff;font-weight:900;font-size:8.5px;border-top:2.5px solid #0d2145;padding:3px 4px;}
         tbody tr:not(.cat-head):not(.avail-head):not(.notavail-head):not(.subtotal-row):not(.cat-subtotal):not(.grand-total):nth-child(even){background:rgba(27,58,107,.03);}
         /* ── SIGNATURE BLOCK ── */
-        .sig-block{display:flex;justify-content:space-between;margin-top:36px;gap:24px;}
+        .sig-block{display:flex;justify-content:space-between;margin-top:auto;padding-top:4px;gap:8px;break-inside:auto;page-break-inside:auto;}
         .sig{flex:1;text-align:center;}
-        .sig-name-line{border-top:1px solid #000;margin-top:30px;padding-top:3px;}
-        .sig-name{font-weight:900;font-size:7.5px;text-transform:uppercase;}
-        .sig-role{font-size:7px;font-weight:700;color:#333;margin-top:1px;}
-        .sig-title{font-size:6.5px;color:#555;}
+        .sig-name-line{border-top:1px solid #000;margin-top:8px;padding-top:1px;}
+        .sig-name{font-weight:900;font-size:6.4px;text-transform:uppercase;}
+        .sig-role{font-size:5.8px;font-weight:700;color:#333;margin-top:0;}
+        .sig-title{font-size:5.4px;color:#555;}
+        .compact-mode{
+          --app-body-size:8.5px;
+          --app-meta-size:8px;
+          --app-table-size:5.6px;
+          --app-th-size:5.6px;
+          --app-th-q-size:5.2px;
+          --app-th-m-size:4.9px;
+          --app-item-min:88px;
+          --app-item-max:118px;
+        }
+        .compact-mode .form-header{margin-bottom:3px;}
+        .compact-mode .form-title-main{font-size:11px;}
+        .compact-mode .form-title-sub{margin-bottom:3px;}
+        .compact-mode .info-box{padding:3px 6px;margin-bottom:3px;}
+        .compact-mode .sig-block{margin-top:4px;gap:6px;}
+        .split-mode .sig-block{margin-top:8px;}
         /* ── EDITABLE FIELDS ── */
         [contenteditable]{cursor:text;outline:none;border-radius:2px;transition:background .15s;min-width:4px;display:inline-block;}
         [contenteditable]:hover{background:rgba(255,220,0,.28);}
@@ -1418,7 +1454,8 @@ const firebaseConfig = {
         .print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:9px 20px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}
         @media print{
           .print-toolbar{display:none!important;}
-          .page{padding-top:4mm!important;}
+          .print-toolbar-spacer{display:none!important;}
+          .page{padding-top:var(--app-page-top)!important;}
           .cat-head{page-break-before:auto;}
           [contenteditable]:hover,[contenteditable]:focus{background:transparent!important;box-shadow:none!important;}
         }
@@ -1456,7 +1493,7 @@ const firebaseConfig = {
       const deptsJSON = JSON.stringify(DEPTS);
 
       const toolbar = `<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"><\/script>
-      <style id="pgStyle">@page{size:A4 landscape;margin:4mm;}<\/style>
+      <style id="pgStyle">@page{size:A4 landscape;margin:2mm 4mm 4mm 4mm;}<\/style>
       <style>
         .print-toolbar{position:fixed;top:0;left:0;right:0;background:#1a3358;color:#fff;padding:8px 18px;display:flex;align-items:center;gap:9px;z-index:9999;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}
         .pt-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:6px;padding:7px 15px;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
@@ -1466,7 +1503,7 @@ const firebaseConfig = {
         .pt-btn-close{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)!important;font-weight:500;}
         .pt-sel{background:#243f6a;color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:5px;padding:5px 8px;font-size:12px;cursor:pointer;}
         .pt-sel option{background:#1a3358;color:#fff;}
-        @media print{.print-toolbar{display:none!important;}.page{padding-top:4mm!important;}}
+        @media print{.print-toolbar,.print-toolbar-spacer{display:none!important;}.page{padding-top:var(--app-page-top)!important;}}
       <\/style>
       <div class="print-toolbar">
         <button class="pt-btn pt-btn-print" onclick="window.print()">
@@ -1481,13 +1518,45 @@ const firebaseConfig = {
         <span style="font-size:11px;opacity:.65;background:rgba(255,220,0,.18);border:1px solid rgba(255,220,0,.4);border-radius:4px;padding:2px 8px;">✏️ Click any highlighted field to edit</span>
         <button class="pt-btn pt-btn-close" onclick="window.close()" style="margin-left:auto">✕ Close</button>
       </div>
-      <div style="height:44px"></div>
+      <div class="print-toolbar-spacer" style="height:44px"></div>
       <script>
         function setPaperSize(val){
           var s=document.getElementById('pgStyle');
-          s.textContent=val==='legal'?'@page{size:legal landscape;margin:4mm;}':'@page{size:A4 landscape;margin:4mm;}';
+          var sh=document.getElementById('pgStyleHead');
+          var root=document.documentElement;
+          if(val==='legal'){
+            var rule='@page{size:legal landscape;margin:2mm 4mm 4mm 4mm;}';
+            s.textContent=rule;
+            if(sh) sh.textContent=rule;
+            root.style.setProperty('--app-page-top','1.6mm');
+            root.style.setProperty('--app-body-size','9.3px');
+            root.style.setProperty('--app-meta-size','8.8px');
+            root.style.setProperty('--app-table-size','7.1px');
+            root.style.setProperty('--app-th-size','6.7px');
+            root.style.setProperty('--app-th-q-size','6.2px');
+            root.style.setProperty('--app-th-m-size','5.8px');
+            root.style.setProperty('--app-item-min','104px');
+            root.style.setProperty('--app-item-max','140px');
+          }else{
+            var rule='@page{size:A4 landscape;margin:2mm 4mm 4mm 4mm;}';
+            s.textContent=rule;
+            if(sh) sh.textContent=rule;
+            root.style.setProperty('--app-page-top','2mm');
+            root.style.setProperty('--app-body-size','9px');
+            root.style.setProperty('--app-meta-size','8.5px');
+            root.style.setProperty('--app-table-size','6.8px');
+            root.style.setProperty('--app-th-size','6.4px');
+            root.style.setProperty('--app-th-q-size','5.9px');
+            root.style.setProperty('--app-th-m-size','5.4px');
+            root.style.setProperty('--app-item-min','98px');
+            root.style.setProperty('--app-item-max','130px');
+          }
           document.getElementById('pt-paper-lbl').textContent='Ctrl+P · '+(val==='legal'?'Legal':'A4')+' · Landscape';
         }
+        window.addEventListener('beforeprint', function(){
+          var sel=document.getElementById('pt-paper');
+          setPaperSize(sel ? sel.value : 'a4');
+        });
       <\/script>
       <script>
         const _ITEMS  = ${itemsJSON};
@@ -1856,18 +1925,18 @@ const firebaseConfig = {
 
       return `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <title>APP-CSE — ${titleSuffix}</title>
-        <style>@page{size:A4 landscape;margin:4mm;}</style>
+        <style id="pgStyleHead">@page{size:A4 landscape;margin:2mm 4mm 4mm 4mm;}</style>
         <style>${PRINT_CSS}</style>
       </head><body>
         ${toolbar}
-        <div class="page">
+        <div class="${pageClass}">
           <div class="form-header">
             <div class="form-header-meta">
               <div class="form-header-meta-left">
                 Province, City or Municipality: <strong>Balayan, Batangas</strong>
               </div>
               <div class="form-header-meta-right">
-                Plan Control No.: <span contenteditable="true" spellcheck="false" style="border-bottom:1px solid #000;min-width:80px;display:inline-block;">_________________</span> &nbsp;&nbsp; Page 1 of 1
+                Plan Control No.: <span contenteditable="true" spellcheck="false" style="border-bottom:1px solid #000;min-width:80px;display:inline-block;">_________________</span> &nbsp;&nbsp; Page: <span contenteditable="true" spellcheck="false" style="border-bottom:1px solid #000;min-width:36px;display:inline-block;text-align:center;">1</span>
               </div>
             </div>
             <div class="form-title-main">Annual Procurement Plan for <span contenteditable="true" spellcheck="false" id="plan-year" style="border-bottom:1.5px solid #000;min-width:28px;display:inline-block;text-align:center;">2026</span></div>
@@ -1880,7 +1949,9 @@ const firebaseConfig = {
             <div class="info-cell"><span class="info-lbl">Total:</span><span class="info-val">${fmtC(grandTotal)}</span></div>
             <div class="info-cell"><span class="info-lbl">Date Submitted:</span><span class="info-val">${datePrinted}</span></div>
           </div>
-          <table>${tableHead}<tbody>${rowsHTML}</tbody></table>
+          <div class="table-wrap">
+            <table>${tableHead}<tbody>${rowsHTML}</tbody></table>
+          </div>
           <div class="sig-block">
             <div class="sig">
               <div class="sig-name-line">
@@ -1966,15 +2037,19 @@ const firebaseConfig = {
       // ── @page margins: top 0.5in(13mm), sides 0.75in(19mm), bottom 0.75in(19mm) ──
       // Usable A4: 172mm wide × 265mm tall | Legal: 172mm wide × 324mm tall
       const PR_CSS = `
+        :root{
+          --paper-w:198mm; /* A4 portrait with 6mm left/right margins */
+          --paper-h:287mm; /* A4 portrait with 4mm top + 6mm bottom margins */
+        }
         *{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:'Arial',sans-serif;font-size:11px;color:#000;background:#fff;}
 
         /* ── PAGE SHELL ── */
         .page{
-          padding:2mm;
-          width:172mm;
+          padding:1.5mm;
+          width:var(--paper-w,198mm);
           margin:0 auto;
-          min-height:var(--paper-h,261mm);
+          min-height:var(--paper-h,287mm);
           display:flex;
           flex-direction:column;
         }
@@ -2212,26 +2287,26 @@ const firebaseConfig = {
 
         @media print{
           .print-toolbar{display:none!important;}
-          .page{padding:2mm!important;margin-top:0!important;width:100%!important;}
+          .page{padding:1.5mm!important;margin-top:0!important;width:var(--paper-w,198mm)!important;}
           [contenteditable]:hover,[contenteditable]:focus{
             background:transparent!important;box-shadow:none!important;}
         }
       `;
 
       const toolbar = `
-        <style id="pgStylePR">@page{size:A4 portrait;margin:10mm 15mm 15mm 15mm;}<\/style>
+        <style id="pgStylePR">@page{size:A4 portrait;margin:4mm 6mm 6mm 6mm;}<\/style>
         <script>
           function setPaperSizePR(val){
             var s=document.getElementById('pgStylePR');
             var isLegal=val==='legal';
             s.textContent=isLegal
-              ?'@page{size:legal portrait;margin:10mm 15mm 15mm 15mm;}'
-              :'@page{size:A4 portrait;margin:10mm 15mm 15mm 15mm;}';
+              ?'@page{size:legal portrait;margin:4mm 6mm 6mm 6mm;}'
+              :'@page{size:A4 portrait;margin:4mm 6mm 6mm 6mm;}';
             document.getElementById('pt-pr-lbl').textContent=
               'Ctrl+P \xB7 '+(isLegal?'Legal':'A4')+' \xB7 Portrait';
-            // usable height = paper − top(13mm) − bottom(19mm)
-            document.documentElement.style.setProperty(
-              '--paper-h', isLegal?'324mm':'265mm');
+            // Usable area with margins top 4mm, left/right 6mm, bottom 6mm
+            document.documentElement.style.setProperty('--paper-w', isLegal?'204mm':'198mm');
+            document.documentElement.style.setProperty('--paper-h', isLegal?'346mm':'287mm');
           }
         <\/script>
         <div class="print-toolbar">
