@@ -533,22 +533,163 @@ const firebaseConfig = {
       setTimeout(()=>{ if(inp) inp.focus(); }, 80);
     };
 
+    const QTY_KEYS = Object.values(MONTH_KEYS); // ['qty_jan',...,'qty_dec']
+
+    // ── Year switch loading overlay ──
+    let _yearSwitchCancelled = false;
+    let _yearSwitchStallTimer = null;
+    let _yearSwitchLastProgressAt = 0;
+
+    function showYearSwitchOverlay(subtext){
+      _yearSwitchCancelled = false;
+      _yearSwitchLastProgressAt = Date.now();
+      let ov = document.getElementById('year-switch-overlay');
+      if(!ov){
+        ov = document.createElement('div');
+        ov.id = 'year-switch-overlay';
+        ov.className = 'year-switch-overlay';
+        ov.innerHTML = `
+          <div class="year-switch-box">
+            <div class="loading-spinner"></div>
+            <div class="year-switch-title">Switching Fiscal Year…</div>
+            <div class="year-switch-sub" id="year-switch-sub">Loading records…</div>
+            <div class="year-switch-progress-track"><div class="year-switch-progress-fill" id="year-switch-fill"></div></div>
+            <div class="year-switch-pct" id="year-switch-pct">0%</div>
+            <div class="year-switch-warn" id="year-switch-warn">
+              This is taking longer than expected — possibly a Firestore write quota limit
+              or an unstable internet connection. You can close this dialog now; the update
+              may still be running in the background, or try again later.
+            </div>
+            <button class="year-switch-cancel-btn" id="year-switch-cancel-btn" onclick="cancelYearSwitchOverlay()">Close / Cancel</button>
+          </div>`;
+        document.body.appendChild(ov);
+      }
+      const sub = document.getElementById('year-switch-sub');
+      if(sub && subtext) sub.textContent = subtext;
+      const fill = document.getElementById('year-switch-fill');
+      if(fill) fill.style.width = '0%';
+      const pct = document.getElementById('year-switch-pct');
+      if(pct) pct.textContent = '0%';
+      const warn = document.getElementById('year-switch-warn');
+      if(warn) warn.classList.remove('show');
+      requestAnimationFrame(()=> ov.classList.add('open'));
+
+      // Stall detector: if no progress update for 15s, show a warning (quota/connection hint)
+      if(_yearSwitchStallTimer) clearInterval(_yearSwitchStallTimer);
+      _yearSwitchStallTimer = setInterval(()=>{
+        if(_yearSwitchCancelled){ clearInterval(_yearSwitchStallTimer); return; }
+        if(Date.now() - _yearSwitchLastProgressAt > 15000){
+          const w = document.getElementById('year-switch-warn');
+          if(w) w.classList.add('show');
+        }
+      }, 3000);
+    }
+    function updateYearSwitchOverlay(subtext){
+      const sub = document.getElementById('year-switch-sub');
+      if(sub && subtext) sub.textContent = subtext;
+    }
+    function updateYearSwitchProgress(done, total){
+      _yearSwitchLastProgressAt = Date.now();
+      const warn = document.getElementById('year-switch-warn');
+      if(warn) warn.classList.remove('show');
+      const p = total > 0 ? Math.min(100, Math.round((done/total)*100)) : 0;
+      const fill = document.getElementById('year-switch-fill');
+      const pct = document.getElementById('year-switch-pct');
+      if(fill) fill.style.width = p + '%';
+      if(pct) pct.textContent = p + '% (' + done + '/' + total + ' records)';
+    }
+    function hideYearSwitchOverlay(){
+      if(_yearSwitchStallTimer){ clearInterval(_yearSwitchStallTimer); _yearSwitchStallTimer = null; }
+      const ov = document.getElementById('year-switch-overlay');
+      if(ov) ov.classList.remove('open');
+    }
+    window.cancelYearSwitchOverlay = function(){
+      _yearSwitchCancelled = true;
+      hideYearSwitchOverlay();
+      toast('Year switch dialog closed. The update may still be running in the background — refresh to see the latest status.', 'info');
+    };
+
     window.saveAppYear = async function(){
       const inp = document.getElementById('year-modal-input');
       const err = document.getElementById('year-modal-err');
       const yr = parseInt((inp?.value||'').trim());
-      if(!yr || yr < 2000 || yr > 2100){
-        if(err){ err.textContent='Enter a valid year (2000–2100).'; err.style.display='block'; }
+      if(!yr || yr < 1){
+        if(err){ err.textContent='Enter a valid year.'; err.style.display='block'; }
         return;
       }
       if(!isOnline){ if(err){ err.textContent='Offline. Cannot save.'; err.style.display='block'; } return; }
+      if(yr === APP_YEAR){ closeModal('modal-year'); return; } // no-op, same year
       try {
+        const oldYear = String(APP_YEAR);
+        const newYear = String(yr);
+        closeModal('modal-year');
+        showYearSwitchOverlay('Loading records…');
+
+        const snap = await getDocs(col());
+        const docs = snap.docs;
+
+        // Chunk into batches of 500 (Firestore writeBatch limit), commit in parallel for speed,
+        // but track real completion progress per batch as each one resolves.
+        const totalDocs = docs.length;
+        let doneDocs = 0;
+        updateYearSwitchProgress(0, totalDocs);
+
+        const batchPromises = [];
+        for(let i = 0; i < docs.length; i += 500){
+          const chunk = docs.slice(i, i + 500);
+          const batch = writeBatch(db);
+          chunk.forEach(docSnap => {
+            const data = docSnap.data();
+            const yearlyQty = data.yearlyQty || {};
+
+            // 1) Snapshot current live quantities under the year we're leaving
+            const currentSnapshot = {};
+            QTY_KEYS.forEach(k => { currentSnapshot[k] = parseFloat(data[k] || 0) || 0; });
+            yearlyQty[oldYear] = currentSnapshot;
+
+            // 2) Restore the target year's saved quantities if they exist, else reset to 0
+            const restore = yearlyQty[newYear] || {};
+            const updatePayload = { yearlyQty };
+            let restoredTotalQty = 0;
+            QTY_KEYS.forEach(k => {
+              const v = parseFloat(restore[k] || 0) || 0;
+              updatePayload[k] = v;
+              restoredTotalQty += v;
+            });
+            // Keep the mirrored summary fields (used by Total Qty / Total Amount columns) in sync
+            const unitPrice = parseFloat(data.unit_price || 0) || 0;
+            updatePayload.quantity = restoredTotalQty;
+            updatePayload.total_amount = (unitPrice * restoredTotalQty).toFixed(2);
+
+            batch.update(docSnap.ref, updatePayload);
+          });
+          const chunkSize = chunk.length;
+          batchPromises.push(
+            batch.commit().then(()=>{
+              doneDocs += chunkSize;
+              updateYearSwitchOverlay('Updating records…');
+              updateYearSwitchProgress(doneDocs, totalDocs);
+            })
+          );
+        }
+        await Promise.race([
+          Promise.all(batchPromises),
+          new Promise((_, reject) => setTimeout(()=> reject(new Error('Timeout: operation took longer than 45s, possibly due to a quota limit or unstable connection.')), 45000))
+        ]);
+
+        if(_yearSwitchCancelled) return; // user closed the dialog; let it finish silently in background
+
+        updateYearSwitchOverlay('Finalizing…');
         await setDoc(appSettingsDoc(), { procurementYear: yr }, { merge: true });
         APP_YEAR = yr;
         updateYearUI();
-        closeModal('modal-year');
-        toast(`Procurement year set to ${yr}`, 'success');
-      } catch(e){ if(err){ err.textContent='Error: '+e.message; err.style.display='block'; } }
+        hideYearSwitchOverlay();
+        toast(`Procurement year set to ${yr} — quantities reset (previous year saved)`, 'success');
+      } catch(e){
+        if(_yearSwitchCancelled) return; // already dismissed by user, don't re-show anything
+        hideYearSwitchOverlay();
+        toast('Error switching year: '+e.message, 'error');
+      }
     };
 
     // Silent dept adder for importer auto-registration
@@ -2068,7 +2209,7 @@ const firebaseConfig = {
 
           // ── ROW 4: Title ──
           const r4=E();
-          r4[0]=cv('ANNUAL PROCUREMENT PLAN for 2026',S_TITLE);
+          r4[0]=cv('ANNUAL PROCUREMENT PLAN for ' + APP_YEAR,S_TITLE);
           aoa.push(r4); M(3,0,3,25);
 
           // ── ROW 5: Subtitle ──
@@ -2273,7 +2414,7 @@ const firebaseConfig = {
               // Single dept — use "Printing Sheet" tab name to match official xlsm format
               buildSheet(wb, _ITEMS, _DEPT, 'Printing Sheet');
             }
-            const fname=(_TITLE.replace(/[^a-zA-Z0-9 _\-]/g,'_')||'APP-CSE-2026')+'.xlsx';
+            const fname=(_TITLE.replace(/[^a-zA-Z0-9 _\-]/g,'_')||('APP-CSE-'+APP_YEAR))+'.xlsx';
 
             // Build blob from workbook
             const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
@@ -2326,7 +2467,7 @@ const firebaseConfig = {
                 Plan Control No.: <span contenteditable="true" spellcheck="false" style="border-bottom:1px solid #000;min-width:80px;display:inline-block;">_________________</span> &nbsp;&nbsp; Page: <span contenteditable="true" spellcheck="false" style="border-bottom:1px solid #000;min-width:36px;display:inline-block;text-align:center;">1</span>
               </div>
             </div>
-            <div class="form-title-main">Annual Procurement Plan for <span contenteditable="true" spellcheck="false" id="plan-year" style="border-bottom:1.5px solid #000;min-width:28px;display:inline-block;text-align:center;">2026</span></div>
+            <div class="form-title-main">Annual Procurement Plan for <span contenteditable="true" spellcheck="false" id="plan-year" style="border-bottom:1.5px solid #000;min-width:28px;display:inline-block;text-align:center;">${APP_YEAR}</span></div>
             <div class="form-title-sub">For Common-Use Supplies and Equipment (APP-CSE)</div>
           </div>
           <div class="info-box">

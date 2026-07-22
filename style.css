@@ -1079,6 +1079,46 @@ tbody td:last-child { border-right: none; }
 .empty-text { font-size: 14px; margin-bottom: 18px; color: var(--ink3); }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
 
+/* ════ YEAR SWITCH OVERLAY ════ */
+.year-switch-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10,12,16,.72); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .18s ease;
+}
+.year-switch-overlay.open { opacity: 1; pointer-events: all; }
+.year-switch-box {
+  background: var(--bg1, #14171c); border-radius: var(--r2, 14px);
+  padding: 34px 40px; text-align: center; box-shadow: var(--sh3, 0 10px 40px rgba(0,0,0,.4));
+  border: 1px solid var(--bd, rgba(255,255,255,.08));
+  min-width: 280px;
+}
+.year-switch-box .loading-spinner { margin-bottom: 16px; width: 34px; height: 34px; }
+.year-switch-title { font-size: 15px; font-weight: 600; color: var(--ink1, #fff); margin-bottom: 4px; }
+.year-switch-sub { font-size: 12.5px; color: var(--ink3); margin-bottom: 14px; }
+.year-switch-progress-track {
+  width: 100%; height: 8px; border-radius: 999px;
+  background: var(--bg3, rgba(255,255,255,.08)); overflow: hidden;
+}
+.year-switch-progress-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: var(--blue3, #4c8dff);
+  transition: width .25s ease;
+}
+.year-switch-pct { font-size: 11.5px; color: var(--ink3); margin-top: 8px; font-weight: 600; }
+.year-switch-warn {
+  display: none; margin-top: 14px; padding: 10px 12px; border-radius: 10px;
+  background: rgba(220,80,60,.12); border: 1px solid rgba(220,80,60,.35);
+  color: #ff9b8a; font-size: 11.5px; line-height: 1.5; text-align: left;
+}
+.year-switch-warn.show { display: block; }
+.year-switch-cancel-btn {
+  margin-top: 14px; padding: 8px 18px; border-radius: 999px; border: 1px solid var(--bd, rgba(255,255,255,.15));
+  background: transparent; color: var(--ink3); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all .15s ease;
+}
+.year-switch-cancel-btn:hover { background: rgba(255,255,255,.06); color: var(--ink1, #fff); }
+
 /* ════ TOAST ════ */
 .toast {
   position: fixed; bottom: 26px; right: 26px;
