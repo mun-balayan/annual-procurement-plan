@@ -1382,6 +1382,14 @@ const firebaseConfig = {
               <tbody>${deptRows}</tbody>
             </table>
           </div>
+        </div>
+        <div class="form-actions" style="padding-top:12px;border-top:1px solid var(--bdr2);margin-top:4px">
+          <button class="btn btn-danger" onclick="confirmDelete('${g.records[0]?.id}')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4h4v2M5 6l1 11h8l1-11"/><path d="M8 10v4M12 10v4"/></svg>Delete
+          </button>
+          <button class="btn btn-outline" onclick="openEditModal('${g.records[0]?.id}')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3.5a2.12 2.12 0 013 3L7 16H4v-3L13.5 3.5z"/></svg>Edit
+          </button>
         </div>`;
       openModal('modal-item');
     };
